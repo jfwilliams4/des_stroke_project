@@ -11,7 +11,7 @@ import csv
 class g:
     #525600 (Year of Minutes)
     sim_duration = 525600
-    number_of_runs = 5
+    number_of_runs = 10
     warm_up_period = sim_duration / 5
     patient_inter = 180
     number_of_nurses = 2
@@ -588,7 +588,8 @@ class Model:
                             random.randint(0,2)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
-                        if self.env.now > g.warm_up_period:
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
@@ -602,7 +603,8 @@ class Model:
                             random.randint(0,1)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
-                        if self.env.now > g.warm_up_period:
+                        if self.env.now > g.warm_up_period and\
+                            patient.advanced_ct_pathway == True:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
@@ -741,9 +743,10 @@ class Model:
         self.calculate_run_results()
 
         # Print the run number with the patient-level results from this run of 
-        # the model
-        print (f"Run Number {self.run_number}")
-        print (self.results_df)
+        # the model, this is commented out at the moment. 
+
+        #print (f"Run Number {self.run_number}")
+        #print (self.results_df)
 
         if g.write_to_csv == True:
             self.results_df.to_csv(f"output {self.run_number}.csv", 
@@ -780,8 +783,7 @@ class Trial:
         self.nurse_q_graph_df["Time"] = [0.0]
         self.nurse_q_graph_df["Patients in Assessment Queue"] = [0.0]
 
-    # Method to print out the results from the trial.  In real world models,
-    # you'd likely save them as well as (or instead of) printing them
+    # This Code prints the trial results.
     
     def print_trial_results(self):
         print ("Trial Results")
