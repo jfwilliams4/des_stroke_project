@@ -122,7 +122,7 @@ class Model:
         self.results_df["Q Time Nurse"] = [0.0]
         self.results_df["Time with Nurse"] = [0.0]
         self.results_df["Q Time Ward"] = [0.0]
-        self.results_df["Ward LOD"] = [0.0]
+        self.results_df["Ward LOS"] = [0.0]
         self.results_df["Time with CTP"] = [0.0]
         self.results_df["Time with CT"] = [0.0]
         self.results_df["Time in SDEC"] = [0.0]  
@@ -536,6 +536,9 @@ class Model:
 
             start_q_ward = self.env.now
 
+            # Request the ward bed and hold the patient in a queue until this 
+            # is met.
+
             with self.ward_bed.request() as req:
 
                 yield req
@@ -548,9 +551,15 @@ class Model:
                     self.results_df.at[patient.id, "Ward Occupancy"] = (
                     len(self.ward_occupancy))
 
+                # The patient attribute for the queuing time in the ward is 
+                # assigned here.
+
                 end_q_ward = self.env.now
 
                 patient.q_time_ward = end_q_ward - start_q_ward
+
+                # The below series of if statements calculate the improvement 
+                # based on diagnosis, starting MRS and thrombolysis status.
 
                 if patient.patient_diagnosis == 0:
                     sampled_ward_act_time = random.expovariate\
@@ -562,7 +571,10 @@ class Model:
                               random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
-                    
+                
+                # The below code adjusts the length of stay based on if the 
+                # patient has had thrombolysis or not.
+
                 if patient.patient_diagnosis == 1:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_i_ward_time)
@@ -594,7 +606,6 @@ class Model:
                             g.inpatient_bed_cost
                         self.ward_occupancy.remove(patient)
                     
-
                     elif patient.mrs_type == 0:
                         patient.mrs_discharge = patient.mrs_type
                         yield self.env.timeout(sampled_ward_act_time)
@@ -617,11 +628,13 @@ class Model:
                         (1.0 / g.mean_n_non_stroke_ward_time)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
-                    
+            
+            # Relevent information is recorded in the results DataFrame.
+
             if self.env.now > g.warm_up_period:
                     self.results_df.at[patient.id, "Q Time Ward"] = (
                     patient.q_time_ward)
-                    self.results_df.at[patient.id, "Ward LOD"] = (
+                    self.results_df.at[patient.id, "Ward LOS"] = (
                     sampled_ward_act_time)
                     self.results_df.at[patient.id, "MRS DC"] = (
                     patient.mrs_discharge)
@@ -629,15 +642,16 @@ class Model:
                     patient.mrs_type - patient.mrs_discharge)
 
 
-    # This method calculates results over a single run.  Here we just calculate
-    # a mean, but in real world models you'd probably want to calculate more.
+    # This method calculates results over a single run.
+    
     def calculate_run_results(self):
        
         # Drop the first row of the results DataFrame, as this is just a dummy
+        # and will take on the value of zero.
         self.results_df.drop([1], inplace=True)
 
-        # Take the mean of the queuing times for the nurse across patients in
-        # this run of the model.
+        # The below code calculates the average or cumulative values the model 
+        # is concerned with.
 
         self.mean_q_time_nurse = round(self.results_df["Q Time Nurse"].mean(),0)
 
@@ -652,11 +666,16 @@ class Model:
         self.admission_delays = len(self.results_df\
                                     [self.results_df["Q Time Ward"] > 0])
 
-        self.mean_los_ward = round(self.results_df["Ward LOD"].mean()/60, 0)
+        self.mean_los_ward = round(self.results_df["Ward LOS"].mean()/60, 0)
 
         self.sdec_financial_savings = len(self.admission_avoidance) * \
             g.inpatient_bed_cost
         
+        # The below code ensures that the SDEC incurs no cost if it is not 
+        # running at all in the model. This was introduced as a bug was causing
+        # it to return small values even if the SDEC was not running. This is 
+        # now fixed, but the code works so I have left it in place.
+
         if g.sdec_unav_freq == 0:
             self.medical_staff_cost = 0
         else:
@@ -672,7 +691,11 @@ class Model:
         self.total_savings = self.thrombolysis_savings + self.savings_sdec
 
         self.mean_mrs_change = round(self.results_df["MRS Change"].mean(), 2)
-                                                                                            
+
+    # This method plots the stroke nurse assessment queue graph, as it is after
+    # the run method it will appear after the run has completed in the output.
+    # Might need to change this...
+
     def plot_stroke_nurse_graphs(self):  
         
         if g.gen_graph == True:
@@ -698,10 +721,11 @@ class Model:
         
     # The run method starts up the DES entity generators, runs the simulation,
     # and in turns calls anything we need to generate results for the run
+    
     def run(self):
-        # Start up our DES entity generators that create new patients.  We've
-        # only got one in this model, but we'd need to do this for each one if
-        # we had multiple generators.
+        
+        # starts up the generators in the model, of which there are three.
+
         self.env.process(self.generator_patient_arrivals())
         self.env.process(self.obstruct_ctp())
         self.env.process(self.obstruct_sdec())
@@ -725,10 +749,12 @@ class Model:
         self.plot_stroke_nurse_graphs()
     
 # Class representing a Trial for our simulation - a batch of simulation runs.
+
 class Trial:
+    
     # The constructor sets up a pandas dataframe that will store the key
-    # results from each run (just the mean queuing time for the nurse here)
-    # against run number, with run number as the index.
+    # results from each run with run number as the index.
+    
     def  __init__(self):
         self.df_trial_results = pd.DataFrame()
         self.df_trial_results["Run Number"] = [0]
@@ -753,18 +779,21 @@ class Trial:
 
     # Method to print out the results from the trial.  In real world models,
     # you'd likely save them as well as (or instead of) printing them
+    
     def print_trial_results(self):
         print ("Trial Results")
         print (self.df_trial_results)
 
     # Method to run a trial
+    
     def run_trial(self):
+
         # Run the simulation for the number of runs specified in g class.
         # For each run, we create a new instance of the Model class and call its
         # run method, which sets everything else in motion.  Once the run has
-        # completed, we grab out the stored run results (just mean queuing time
-        # here) and store it against the run number in the trial results
-        # dataframe.
+        # completed, we grab out the stored run results 
+        # and store it against the run number in the trial results dataframe.
+        
         for run in range(g.number_of_runs):
             my_model = Model(run)
             my_model.run()
