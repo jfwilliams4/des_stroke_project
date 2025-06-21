@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
-#Global class to store parameters for the model.
+# Global class to store parameters for the model.
 
 class g:
     #525600 (Year of Minutes)
@@ -27,15 +27,8 @@ class g:
     mean_n_ich_ward_time = 17280
     mean_n_tia_ward_time = 1440
     thrombolysis_los_save = 0.75
-    sdec_unav_time = 720
-    # Setting freq to zero will close the SDEC, having it set to a value > sim
-    # duration will mean it is always open
-    sdec_unav_freq = 720
 
-    ctp_unav_time = 720 
-    # Setting freq to zero will remove ctp, having it set to a value > sim
-    # duration will mean it is always open
-    ctp_unav_freq = 720 
+
 
     sdec_dr_cost_min = 0.30
     inpatient_bed_cost = 876
@@ -54,13 +47,23 @@ class g:
     #  data collection)
     tia_admission = 10
     stroke_mimic_admission = 30
+    
+    # Operational hours of SDEC and CTP are set by the user and stored in the 
+    # variables below.
+
+    sdec_unav_time = 0
+    sdec_unav_freq = 0 
+    ctp_unav_time = 0 
+    ctp_unav_freq = 0 
 
     # These values are changed by the model itself
+
     sdec_unav = False
     ctp_unav = False
     write_to_csv = False
     gen_graph = False
     therapy_sdec = False
+
 
 # Patient class to store patient attributes
 
@@ -849,7 +852,7 @@ while graph_input == False:
     else:
         print ("Invalid Input Please Try Again")
 
-#This code asks if the user wants to have full therapy support for the SDEC
+# This code asks if the user wants to have full therapy support for the SDEC
 
 therapy_input = False
 
@@ -862,6 +865,46 @@ while therapy_input == False:
     elif therapy_value == "No" or therapy_value == "no":
         g.therapy_sdec = False
         therapy_input = True
+    else:
+        print ("Invalid Input Please Try Again")
+
+# This code asks the user how long the SDEC should be unavailable for, as a 
+# % of days.
+
+sdec_input = False
+
+while sdec_input == False:
+
+    sdec_value = int(input("What percentage of the day should the SDEC " \
+    "be available? (0-100)"))
+    if sdec_value <= 100 and sdec_value >= 0:
+        g.sdec_unav_freq = 1440 * (sdec_value / 100)
+        g.sdec_unav_time = 1440 - g.sdec_unav_freq
+        sdec_input = True
+    elif sdec_value == 100:
+        g.sdec_unav_freq = g.sim_duration * 2
+        g.sdec_unav_time = 0
+        sdec_input = True
+    else:
+        print ("Invalid Input Please Try Again")
+
+# This code asks the user how long the SDEC should be unavailable for, as a 
+# % of days.
+
+ctp_input = False
+
+while ctp_input == False:
+
+    ctp_value = int(input("What percentage of the day should the CTP " \
+    "be available? (0-100)"))
+    if ctp_value <= 100 and ctp_value >= 0:
+        g.ctp_unav_freq = 1440 * (ctp_value / 100)
+        g.ctp_unav_time = 1440 - g.ctp_unav_freq
+        ctp_input = True
+    elif sdec_value == 100:
+        g.ctp_unav_freq = g.sim_duration * 2
+        g.ctp_unav_time = 0
+        sdec_input = True
     else:
         print ("Invalid Input Please Try Again")
 
