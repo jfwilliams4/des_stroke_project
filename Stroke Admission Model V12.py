@@ -63,6 +63,7 @@ class g:
     write_to_csv = False
     gen_graph = False
     therapy_sdec = False
+    trials_run_counter = 1
 
     
 
@@ -707,7 +708,7 @@ class Model:
     # the run method it will appear after the run has completed in the output.
     # Might need to change this...
 
-    def plot_stroke_nurse_graphs(self):  
+    def plot_stroke_run_graphs(self):  
         
         if g.gen_graph == True:
         
@@ -788,7 +789,7 @@ class Model:
             self.results_df.to_csv(f"output {self.run_number}.csv", 
                                index=False)
 
-        self.plot_stroke_nurse_graphs()
+        self.plot_stroke_run_graphs()
     
 # Class representing a Trial for our simulation - a batch of simulation runs.
 
@@ -814,16 +815,6 @@ class Trial:
         self.df_trial_results["Total Savings"] = [0.0]
         self.df_trial_results["Mean MRS Change"] = [0.0]
         self.df_trial_results.set_index("Run Number", inplace=True)
-
-        self.nurse_q_graph_df = pd.DataFrame()
-        self.nurse_q_graph_df["Time"] = [0.0]
-        self.nurse_q_graph_df["Patients in Assessment Queue"] = [0.0]
-
-    # This Code prints the trial results.
-    
-    def print_trial_results(self):
-        print ("Trial Results")
-        print (self.df_trial_results)
 
     # Method to run a trial
     
@@ -853,12 +844,48 @@ class Trial:
                                                 my_model.total_savings,
                                                 my_model.mean_mrs_change]
 
-        # Once the trial (ie all runs) has completed, print the final results
-        self.print_trial_results()
-
         if g.write_to_csv == True:
             self.df_trial_results.to_csv("trial_results.csv", 
                                index=False)
+
+        # This is new code that will store all averages to compare across 
+        # the different trials.
+
+        for attr, col in [("trial_mean_q_time_nurse",\
+                            "Mean Q Time Nurse (Mins)"),
+            ("trial_number_of_admissions_avoided",\
+              "Number of Admissions Avoided In Run"),
+            ("trial_mean_q_time_ward", "Mean Q Time Ward (Hour)"),
+            ("trial_mean_occupancy", "Mean Occupancy"),
+            ("trial_number_of_admission_delays", "Number of Admission Delays"),
+            ("trial_sdec_financial_savings", "SDEC Savings (£)"),
+            ("trial_thrombolysis_savings", "Thrombolysis Savings (£)"),
+            ("trial_total_savings", "Total Savings")]:
+            
+            if not hasattr(g, attr):
+                setattr(g, attr, {})
+            getattr(g, attr)[g.trials_run_counter] = \
+                self.df_trial_results[col].mean()
+
+        print(f"Trial {g.trials_run_counter} Results:")
+        print(f"Trial Mean Q Time Nurse: \
+              {g.trial_mean_q_time_nurse[g.trials_run_counter]}")
+        print(f"Trial Number of Admissions Avoided: \
+              {g.trial_number_of_admissions_avoided[g.trials_run_counter]}")
+        print(f"Trial Mean Q Time Ward: \
+              {g.trial_mean_q_time_ward[g.trials_run_counter]}")
+        print(f"Trial Mean Occupancy: \
+              {g.trial_mean_occupancy[g.trials_run_counter]}")
+        print(f"Trial Number of Admission Delays: \
+              {g.trial_number_of_admission_delays[g.trials_run_counter]}")
+        print(f"Trial SDEC Financial Savings: \
+              {g.trial_sdec_financial_savings[g.trials_run_counter]}")
+        print(f"Trial Thrombolysis Savings: \
+              {g.trial_thrombolysis_savings[g.trials_run_counter]}")
+        print(f"Trial Total Savings: \
+              {g.trial_total_savings[g.trials_run_counter]}")
+
+
 
 #This code asks the user if they want to generate cvs per run
 csv_input = False
@@ -890,67 +917,102 @@ while graph_input == False:
     else:
         print ("Invalid Input Please Try Again")
 
+
+for x in range(3):
+
 # This code asks if the user wants to have full therapy support for the SDEC
 
-therapy_input = False
+    therapy_input = False
 
-while therapy_input == False:
+    while therapy_input == False:
 
-    therapy_value = input ("Run SDEC with Full Therapy Support? Yes / No")
-    if therapy_value == "Yes" or therapy_value == "yes":
-        g.therapy_sdec = True
-        therapy_input = True
-    elif therapy_value == "No" or therapy_value == "no":
-        g.therapy_sdec = False
-        therapy_input = True
-    else:
-        print ("Invalid Input Please Try Again")
+        therapy_value = input ("Run SDEC with Full Therapy Support? Yes / No")
+        if therapy_value == "Yes" or therapy_value == "yes":
+            g.therapy_sdec = True
+            therapy_input = True
+        elif therapy_value == "No" or therapy_value == "no":
+            g.therapy_sdec = False
+            therapy_input = True
+        else:
+            print ("Invalid Input Please Try Again")
 
-# This code asks the user how long the SDEC should be unavailable for, as a 
-# % of days.
+    # This code asks the user how long the SDEC should be unavailable for, as a 
+    # % of days.
 
-sdec_input = False
+    sdec_input = False
 
-while sdec_input == False:
+    while sdec_input == False:
 
-    sdec_value = int(input("What percentage of the day should the SDEC " \
-    "be available? (0-100)"))
-    if sdec_value <= 100 and sdec_value >= 0:
-        g.sdec_unav_freq = 1440 * (sdec_value / 100)
-        g.sdec_unav_time = 1440 - g.sdec_unav_freq
-        sdec_input = True
-    elif sdec_value == 100:
-        g.sdec_unav_freq = g.sim_duration * 2
-        g.sdec_unav_time = 0
-        sdec_input = True
-    else:
-        print ("Invalid Input Please Try Again")
+        sdec_value = int(input("What percentage of the day should the SDEC " \
+        "be available? (0-100)"))
+        if sdec_value <= 100 and sdec_value >= 0:
+            g.sdec_unav_freq = 1440 * (sdec_value / 100)
+            g.sdec_unav_time = 1440 - g.sdec_unav_freq
+            sdec_input = True
+        elif sdec_value == 100:
+            g.sdec_unav_freq = g.sim_duration * 2
+            g.sdec_unav_time = 0
+            sdec_input = True
+        else:
+            print ("Invalid Input Please Try Again")
 
-# This code asks the user how long the SDEC should be unavailable for, as a 
-# % of days.
+    # This code asks the user how long the SDEC should be unavailable for, as a 
+    # % of days.
 
-ctp_input = False
+    ctp_input = False
 
-while ctp_input == False:
+    while ctp_input == False:
 
-    ctp_value = int(input("What percentage of the day should the CTP " \
-    "be available? (0-100)"))
-    if ctp_value <= 100 and ctp_value >= 0:
-        g.ctp_unav_freq = 1440 * (ctp_value / 100)
-        g.ctp_unav_time = 1440 - g.ctp_unav_freq
-        ctp_input = True
-    elif sdec_value == 100:
-        g.ctp_unav_freq = g.sim_duration * 2
-        g.ctp_unav_time = 0
-        sdec_input = True
-    else:
-        print ("Invalid Input Please Try Again")
+        ctp_value = int(input("What percentage of the day should the CTP " \
+        "be available? (0-100)"))
+        if ctp_value <= 100 and ctp_value >= 0:
+            g.ctp_unav_freq = 1440 * (ctp_value / 100)
+            g.ctp_unav_time = 1440 - g.ctp_unav_freq
+            ctp_input = True
+        elif sdec_value == 100:
+            g.ctp_unav_freq = g.sim_duration * 2
+            g.ctp_unav_time = 0
+            sdec_input = True
+        else:
+            print ("Invalid Input Please Try Again")
+
+    # Create an instance of the Trial class
+    my_trial = Trial()
+
+    # Call the run_trial method of our Trial object
+    my_trial.run_trial()
+
+    g.trials_run_counter += 1
+
+print ("All Trials Completed")
 
 
-# Create an instance of the Trial class
-my_trial = Trial()
+# Combine all trial results into a single dictionary and data frame, I am 
+# currently unaware were the trial_sdec_finacial_savings is stored in class g
+# but it works so I'll leave it for now...
+trial_numbers = g.trial_sdec_financial_savings.keys()
+combined_results = {
+    trial: {
+        "Mean Q Time Nurse (Mins)": g.trial_mean_q_time_nurse.get(trial, None),
+        "Number of Admissions Avoided In Run": \
+            g.trial_number_of_admissions_avoided.get(trial, None),
+        "Mean Q Time Ward (Hour)": g.trial_mean_q_time_ward.get(trial, None),
+        "Mean Occupancy": g.trial_mean_occupancy.get(trial, None),
+        "Number of Admission Delays": \
+            g.trial_number_of_admission_delays.get(trial, None),
+        "SDEC Financial Savings (£)": \
+            g.trial_sdec_financial_savings.get(trial, None),
+        "Thrombolysis Savings": g.trial_thrombolysis_savings.get(trial, None),
+        "Total Savings": g.trial_total_savings.get(trial, None)}
+    for trial in trial_numbers
+}
 
-# Call the run_trial method of our Trial object
-my_trial.run_trial()
+df_all_trial_results = pd.DataFrame.from_dict(combined_results, orient='index')
+df_all_trial_results.index.name = 'Trial Number'
 
 
+print(df_all_trial_results)
+
+if g.write_to_csv == True:
+    df_all_trial_results.to_csv("all_trial_results.csv", 
+                               index=False)
