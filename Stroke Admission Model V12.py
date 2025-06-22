@@ -64,6 +64,8 @@ class g:
     gen_graph = False
     therapy_sdec = False
 
+    
+
 
 # Patient class to store patient attributes
 
@@ -746,6 +748,13 @@ class Model:
                     linestyle="-",
                     label="Ward Occupancy")
             
+            # Add trend line 
+            x = self.occupancy_graph_df["Time"]
+            y = self.occupancy_graph_df["Ward Occupancy"]
+            z = np.polyfit(x, y, 1)  # 1 = linear fit
+            p = np.poly1d(z)
+            ax.plot(x, p(x), color="b", linestyle="--", label="Trend Line")
+ 
             ax.legend(loc="upper right")
             
             fig.show()
