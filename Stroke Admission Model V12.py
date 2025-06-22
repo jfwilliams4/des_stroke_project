@@ -11,7 +11,7 @@ import csv
 class g:
     #525600 (Year of Minutes)
     sim_duration = 525600
-    number_of_runs = 10
+    number_of_runs = 5
     warm_up_period = sim_duration / 5
     patient_inter = 180
     number_of_nurses = 2
@@ -178,6 +178,10 @@ class Model:
         # A list to store the number of patients avoiding admission
         self.non_admissions = []
 
+        self.occupancy_graph_df = pd.DataFrame()
+        self.occupancy_graph_df["Time"] = [0.0]
+        self.occupancy_graph_df["Ward Occupancy"] = [0.0]
+
     # A generator function for the patient arrivals. This is an infinite loop
     def generator_patient_arrivals(self):
 
@@ -292,11 +296,6 @@ class Model:
             # entering data into the df, this code exists when ever data is 
             # recorded  
 
-            if self.env.now > g.warm_up_period:
-                self.nurse_q_graph_df.loc[len(self.nurse_q_graph_df)] = [
-                    self.env.now,
-                    len(self.q_for_assessment)]
-           
             if self.env.now > g.warm_up_period:
                 self.nurse_q_graph_df.loc[len(self.nurse_q_graph_df)] = [
                     self.env.now,
@@ -554,6 +553,11 @@ class Model:
                     self.results_df.at[patient.id, "Ward Occupancy"] = (
                     len(self.ward_occupancy))
 
+                if self.env.now > g.warm_up_period:
+                    self.occupancy_graph_df.loc[len(self.occupancy_graph_df)] = [
+                    self.env.now,
+                    len(self.ward_occupancy)]
+
                 # The patient attribute for the queuing time in the ward is 
                 # assigned here.
 
@@ -705,6 +709,8 @@ class Model:
         
         if g.gen_graph == True:
         
+            # Queue for Nurse Assessment Graph
+
             self.nurse_q_graph_df.drop([0], inplace=True)
                 
             fig, ax = plt.subplots()
@@ -723,6 +729,27 @@ class Model:
             ax.legend(loc="upper right")
             
             fig.show()
+
+            # Ward Occupancy Graph
+
+            self.occupancy_graph_df.drop([0], inplace=True)
+
+            fig, ax = plt.subplots()
+
+            ax.set_xlabel("Time")
+            ax.set_ylabel("Stroke Ward Occupancy")
+            ax.set_title(f"Ward Occupancy Over Time "f"{self.run_number}")
+
+            ax.plot(self.occupancy_graph_df["Time"],
+                    self.occupancy_graph_df["Ward Occupancy"],
+                    color="b",
+                    linestyle="-",
+                    label="Ward Occupancy")
+            
+            ax.legend(loc="upper right")
+            
+            fig.show()
+            
         
     # The run method starts up the DES entity generators, runs the simulation,
     # and in turns calls anything we need to generate results for the run
