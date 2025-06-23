@@ -13,14 +13,12 @@ class g:
     sim_duration = 525600
     number_of_runs = 5
     warm_up_period = sim_duration / 5
-    patient_inter = 180
+    patient_inter = 180 
     number_of_nurses = 2
     mean_n_consult_time = 120
     mean_n_ct_time = 20
     number_of_ctp = 1
-    # Will need to update how SDEC beds are requested as the model will always
-    # go one higher than the sdec beds provided
-    sdec_beds = 4
+    sdec_beds = 5
     mean_n_sdec_time = 240
     number_of_ward_beds = 49
     #Different variables for ward stay based on diagnosis / thrombolysis
@@ -380,26 +378,26 @@ class Model:
             self.results_df.at[patient.id, "SDEC Status"] = (
             g.sdec_unav)
 
-        # The below code record the SDEC Occupancy as the patient passes this 
-        # point to ensure it is working as expected.
-
-        if self.env.now > g.warm_up_period:
-            self.results_df.at[patient.id, "SDEC Occupancy"] = (
-            len(self.sdec_occupancy))
-
         # The if statement below checks if the SDEC pathway is active at this 
-        # given time and if there is space in the SDEC itself. This is done 
-        # by checking the length of the SDEC list is <= than the SDEC beds set 
-        # in the g class.
+        # given time and if there is space in the SDEC itself.
 
         if g.sdec_unav == False and len(self.sdec_occupancy) <= g.sdec_beds:
-
+                
             # If the conditions above are met the patient attribute for the SDEC
             # are changed to True and the patient is added to the SDEC occupancy
             # list.
 
-            patient.sdec_pathway = True
             self.sdec_occupancy.append(patient)
+
+            # The below code record the SDEC Occupancy as the patient passes 
+            # this point to ensure it is working as expected.
+
+            if self.env.now > g.warm_up_period:
+                self.results_df.at[patient.id, "SDEC Occupancy"] = (
+                len(self.sdec_occupancy))
+
+            patient.sdec_pathway = True
+            
 
             sampled_sdec_stay_time = random.expovariate(1.0 / 
                                                         g.mean_n_sdec_time)
@@ -422,8 +420,8 @@ class Model:
             # Code to record the SDEC stay time in the results DataFrame.
 
             if self.env.now > g.warm_up_period:
-                self.results_df.at[patient.id, "Time in SDEC"] = (
-                sampled_sdec_stay_time)
+                self.results_df.at[patient.id, "Time in SDEC"] =\
+                      (sampled_sdec_stay_time)
 
         # The below code checks the patient's attributes to see if the 
         # thrombolysis attribute should be changed to True, this is based off 
