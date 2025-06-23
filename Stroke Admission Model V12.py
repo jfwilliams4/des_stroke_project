@@ -18,7 +18,9 @@ class g:
     mean_n_consult_time = 120
     mean_n_ct_time = 20
     number_of_ctp = 1
-    sdec_beds = 5
+    # Will need to update how SDEC beds are requested as the model will always
+    # go one higher than the sdec beds provided
+    sdec_beds = 4
     mean_n_sdec_time = 240
     number_of_ward_beds = 49
     #Different variables for ward stay based on diagnosis / thrombolysis
@@ -27,9 +29,7 @@ class g:
     mean_n_ich_ward_time = 17280
     mean_n_tia_ward_time = 1440
     thrombolysis_los_save = 0.75
-
-
-
+    
     sdec_dr_cost_min = 0.30
     inpatient_bed_cost = 876
     mean_mrs = 2
@@ -64,9 +64,6 @@ class g:
     gen_graph = False
     therapy_sdec = False
     trials_run_counter = 1
-
-    
-
 
 # Patient class to store patient attributes
 
@@ -557,8 +554,8 @@ class Model:
                     len(self.ward_occupancy))
 
                 if self.env.now > g.warm_up_period:
-                    self.occupancy_graph_df.loc[len(self.occupancy_graph_df)] = [
-                    self.env.now,
+                    self.occupancy_graph_df.loc[len(self.occupancy_graph_df)] =\
+                        [self.env.now,
                     len(self.ward_occupancy)]
 
                 # The patient attribute for the queuing time in the ward is 
@@ -712,26 +709,26 @@ class Model:
         
         if g.gen_graph == True:
         
-            # Queue for Nurse Assessment Graph
+            # Queue for Nurse Assessment Graph (Currently Commented Out)
 
-            self.nurse_q_graph_df.drop([0], inplace=True)
+            #self.nurse_q_graph_df.drop([0], inplace=True)
                 
-            fig, ax = plt.subplots()
+            #fig, ax = plt.subplots()
 
-            ax.set_xlabel("Time")
-            ax.set_ylabel("Number of patients in Q for Assessment")
-            ax.set_title(f"Number of Patients in Nurse Assessment Queue \
-                         Over Time "f"{self.run_number}")
+            #ax.set_xlabel("Time")
+            #ax.set_ylabel("Number of patients in Q for Assessment")
+            #ax.set_title(f"Number of Patients in Nurse Assessment Queue \
+                         #Over Time "f"{self.run_number}")
 
-            ax.plot(self.nurse_q_graph_df["Time"],
-                    self.nurse_q_graph_df["Patients in Assessment Queue"],
-                    color="m",
-                    linestyle="-",
-                    label="Q for Stroke Nurse Assessment")
+            #ax.plot(self.nurse_q_graph_df["Time"],
+                    #self.nurse_q_graph_df["Patients in Assessment Queue"],
+                    #color="m",
+                    #linestyle="-",
+                    #label="Q for Stroke Nurse Assessment")
             
-            ax.legend(loc="upper right")
+            #ax.legend(loc="upper right")
             
-            fig.show()
+            #fig.show()
 
             # Ward Occupancy Graph
 
@@ -741,7 +738,8 @@ class Model:
 
             ax.set_xlabel("Time")
             ax.set_ylabel("Stroke Ward Occupancy")
-            ax.set_title(f"Ward Occupancy Over Time "f"{self.run_number}")
+            ax.set_title(f"Trial "f"{g.trials_run_counter}\
+                         Ward Occupancy Over Time "f"{self.run_number}")
 
             ax.plot(self.occupancy_graph_df["Time"],
                     self.occupancy_graph_df["Ward Occupancy"],
@@ -786,7 +784,8 @@ class Model:
         #print (self.results_df)
 
         if g.write_to_csv == True:
-            self.results_df.to_csv(f"output {self.run_number}.csv", 
+            self.results_df.to_csv\
+                (f"trial {g.trials_run_counter} output {self.run_number}.csv", 
                                index=False)
 
         self.plot_stroke_run_graphs()
@@ -845,7 +844,8 @@ class Trial:
                                                 my_model.mean_mrs_change]
 
         if g.write_to_csv == True:
-            self.df_trial_results.to_csv("trial_results.csv", 
+            self.df_trial_results.to_csv\
+                (f"trial {g.trials_run_counter} trial results.csv", 
                                index=False)
 
         # This is new code that will store all averages to compare across 
@@ -860,12 +860,17 @@ class Trial:
             ("trial_number_of_admission_delays", "Number of Admission Delays"),
             ("trial_sdec_financial_savings", "SDEC Savings (£)"),
             ("trial_thrombolysis_savings", "Thrombolysis Savings (£)"),
-            ("trial_total_savings", "Total Savings")]:
-            
+            ("trial_total_savings", "Total Savings"),("trial_mrs_change",\
+                                                      "Mean MRS Change")]:
+
+        # Checks to see if the attribute already exists and if it doesn't 
+        # create it. Creates a mean of each trial and creates a dictionary 
+        # that can be read later.
+
             if not hasattr(g, attr):
                 setattr(g, attr, {})
             getattr(g, attr)[g.trials_run_counter] = \
-                self.df_trial_results[col].mean()
+                round(self.df_trial_results[col].mean(), 2)
 
         print(f"Trial {g.trials_run_counter} Results:")
         print(f"Trial Mean Q Time Nurse: \
@@ -884,9 +889,9 @@ class Trial:
               {g.trial_thrombolysis_savings[g.trials_run_counter]}")
         print(f"Trial Total Savings: \
               {g.trial_total_savings[g.trials_run_counter]}")
-
-
-
+        print(f"Mean MRS Change: \
+              {g.trial_mrs_change[g.trials_run_counter]}")
+        
 #This code asks the user if they want to generate cvs per run
 csv_input = False
 
@@ -1003,7 +1008,8 @@ combined_results = {
         "SDEC Financial Savings (£)": \
             g.trial_sdec_financial_savings.get(trial, None),
         "Thrombolysis Savings": g.trial_thrombolysis_savings.get(trial, None),
-        "Total Savings": g.trial_total_savings.get(trial, None)}
+        "Total Savings": g.trial_total_savings.get(trial, None),\
+            "Mean MRS Change": g.trial_mrs_change.get(trial, None)}
     for trial in trial_numbers
 }
 
