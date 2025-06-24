@@ -13,7 +13,7 @@ class g:
     sim_duration = 525600
     number_of_runs = 5
     warm_up_period = sim_duration / 5
-    patient_inter = 180 
+    patient_inter = 180
     number_of_nurses = 2
     mean_n_consult_time = 120
     mean_n_ct_time = 20
@@ -856,6 +856,9 @@ class Trial:
             ("trial_mean_q_time_ward", "Mean Q Time Ward (Hour)"),
             ("trial_mean_occupancy", "Mean Occupancy"),
             ("trial_number_of_admission_delays", "Number of Admission Delays"),
+            ("trial_financial_savings_of_a_a",\
+             "Financial Savings of Admissions Avoidance (£)"),\
+                ("sdec_medical_cost","SDEC Medical Staff Cost (£)"),
             ("trial_sdec_financial_savings", "SDEC Savings (£)"),
             ("trial_thrombolysis_savings", "Thrombolysis Savings (£)"),
             ("trial_total_savings", "Total Savings"),("trial_mrs_change",\
@@ -870,24 +873,30 @@ class Trial:
             getattr(g, attr)[g.trials_run_counter] = \
                 round(self.df_trial_results[col].mean(), 2)
 
+        print ("---------------------------------------------------")
         print(f"Trial {g.trials_run_counter} Results:")
-        print(f"Trial Mean Q Time Nurse: \
+        print (" ")
+        print(f"Trial Mean Q Time Nurse (Mins):     \
               {g.trial_mean_q_time_nurse[g.trials_run_counter]}")
         print(f"Trial Number of Admissions Avoided: \
               {g.trial_number_of_admissions_avoided[g.trials_run_counter]}")
-        print(f"Trial Mean Q Time Ward: \
+        print(f"Trial Mean Q Time Ward (Hours):     \
               {g.trial_mean_q_time_ward[g.trials_run_counter]}")
-        print(f"Trial Mean Occupancy: \
+        print(f"Trial Mean Ward Occupancy:          \
               {g.trial_mean_occupancy[g.trials_run_counter]}")
-        print(f"Trial Number of Admission Delays: \
+        print(f"Trial Number of Admission Delays:   \
               {g.trial_number_of_admission_delays[g.trials_run_counter]}")
-        print(f"Trial SDEC Financial Savings: \
+        print(f"Trial SDEC Total Savings (£):       \
+              {g.trial_financial_savings_of_a_a[g.trials_run_counter]}")
+        print(f"Trial SDEC Medical Cost (£):        \
+              {g.sdec_medical_cost[g.trials_run_counter]}")
+        print(f"Trial SDEC Savings - Cost (£):      \
               {g.trial_sdec_financial_savings[g.trials_run_counter]}")
-        print(f"Trial Thrombolysis Savings: \
+        print(f"Trial Thrombolysis Savings (£):     \
               {g.trial_thrombolysis_savings[g.trials_run_counter]}")
-        print(f"Trial Total Savings: \
+        print(f"Trial Total Savings (£):            \
               {g.trial_total_savings[g.trials_run_counter]}")
-        print(f"Mean MRS Change: \
+        print(f"Mean MRS Change:                    \
               {g.trial_mrs_change[g.trials_run_counter]}")
         
 #This code asks the user if they want to generate cvs per run
@@ -923,7 +932,7 @@ while graph_input == False:
 
 for x in range(3):
 
-# This code asks if the user wants to have full therapy support for the SDEC
+    # This code asks if the user wants to have full therapy support for the SDEC
 
     therapy_input = False
 
@@ -999,23 +1008,24 @@ combined_results = {
         "Mean Q Time Nurse (Mins)": g.trial_mean_q_time_nurse.get(trial, None),
         "Number of Admissions Avoided In Run": \
             g.trial_number_of_admissions_avoided.get(trial, None),
-        "Mean Q Time Ward (Hour)": g.trial_mean_q_time_ward.get(trial, None),
+        "Mean Q Time Ward (Hours)": g.trial_mean_q_time_ward.get(trial, None),
         "Mean Occupancy": g.trial_mean_occupancy.get(trial, None),
         "Number of Admission Delays": \
             g.trial_number_of_admission_delays.get(trial, None),
-        "SDEC Financial Savings (£)": \
+        "Total SDEC Savings (£)":\
+            g.trial_financial_savings_of_a_a.get(trial, None),\
+            "Total SDEC Staff Cost (£)": g.sdec_medical_cost.get(trial, None),
+        "SDEC Savings - Costs (£)": \
             g.trial_sdec_financial_savings.get(trial, None),
-        "Thrombolysis Savings": g.trial_thrombolysis_savings.get(trial, None),
-        "Total Savings": g.trial_total_savings.get(trial, None),\
+        "Thrombolysis Savings (£)":\
+              g.trial_thrombolysis_savings.get(trial, None),
+        "Total Savings (£)": g.trial_total_savings.get(trial, None),\
             "Mean MRS Change": g.trial_mrs_change.get(trial, None)}
     for trial in trial_numbers
 }
 
 df_all_trial_results = pd.DataFrame.from_dict(combined_results, orient='index')
 df_all_trial_results.index.name = 'Trial Number'
-
-
-print(df_all_trial_results)
 
 if g.write_to_csv == True:
     df_all_trial_results.to_csv("all_trial_results.csv", 
