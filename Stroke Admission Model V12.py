@@ -28,7 +28,7 @@ class g:
     mean_n_tia_ward_time = 1440
     thrombolysis_los_save = 0.75
     
-    sdec_dr_cost_min = 0.30
+    sdec_dr_cost_min = 0.50
     inpatient_bed_cost = 876
     mean_mrs = 2
     
