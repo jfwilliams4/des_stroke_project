@@ -1,0 +1,39 @@
+# Files for Git to ignore
+trial 1 output 0.csv
+trial 1 output 1.csv
+trial 1 output 2.csv
+trial 1 output 3.csv
+trial 1 output 4.csv
+trial 1 output 5.csv
+trial 1 output 6.csv
+trial 1 output 7.csv
+trial 1 output 8.csv
+trial 1 output 9.csv
+trial 2 output 0.csv
+trial 2 output 1.csv
+trial 2 output 2.csv
+trial 2 output 3.csv
+trial 2 output 4.csv
+trial 2 output 5.csv
+trial 2 output 6.csv
+trial 2 output 7.csv
+trial 2 output 8.csv
+trial 2 output 9.csv
+trial 3 output 0.csv
+trial 3 output 1.csv
+trial 3 output 2.csv
+trial 3 output 3.csv
+trial 3 output 4.csv
+trial 3 output 5.csv
+trial 3 output 6.csv
+trial 3 output 7.csv
+trial 3 output 8.csv
+trial 3 output 9.csv
+
+trial 1 trial results.csv
+trial 2 trial results.csv
+trial 3 trial results.csv
+
+all_trial_results.csv
+
+.DS_Store
