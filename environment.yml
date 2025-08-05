@@ -1,4 +1,4 @@
-name: des_stroke
+name: des_stroke_mac
 channels:
   - defaults
   - https://repo.anaconda.com/pkgs/main
