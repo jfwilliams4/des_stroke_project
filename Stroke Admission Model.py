@@ -847,10 +847,15 @@ class Trial:
                                index=False)
 
         # This is new code that will store all averages to compare across 
-        # the different trials.
+        # the different trials. It does this by checking if the attribute
+        # exists in the global g class, and if it doesn't it creates it. It 
+        # then stores the mean of each run against the attribute 
+        # (eg "trial_mean_q_time_nurse")
+
+        # The mean is stored against the key of g.trials_run_counter.
 
         for attr, col in [("trial_mean_q_time_nurse",\
-                            "Mean Q Time Nurse (Mins)"),
+                           "Mean Q Time Nurse (Mins)"),
             ("trial_number_of_admissions_avoided",\
               "Number of Admissions Avoided In Run"),
             ("trial_mean_q_time_ward", "Mean Q Time Ward (Hour)"),
@@ -873,7 +878,13 @@ class Trial:
             getattr(g, attr)[g.trials_run_counter] = \
                 round(self.df_trial_results[col].mean(), 2)
 
+        # Code to store the configuration that was used for this trial.
+        self.trial_info = (\
+            f"Trial {g.trials_run_counter}, SDEC Therapy = {g.therapy_sdec\
+                    }, SDEC Open % = {sdec_value}, CTP Open % = {ctp_value}")
+
         print ("---------------------------------------------------")
+        print(f"{self.trial_info}")
         print(f"Trial {g.trials_run_counter} Results:")
         print (" ")
         print(f"Trial Mean Q Time Nurse (Mins):     \
