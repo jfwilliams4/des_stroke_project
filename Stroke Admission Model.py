@@ -127,16 +127,16 @@ class Model:
         self.results_df["Time with CTP"] = [0.0]
         self.results_df["Time with CT"] = [0.0]
         self.results_df["Time in SDEC"] = [0.0]  
-        self.results_df["CTP Status"] = [0.0]
-        self.results_df["SDEC Status"] = [0.0]
-        self.results_df["Thrombolysis"] = [0.0]
+        self.results_df["CTP Status"] = [""]
+        self.results_df["SDEC Status"] = [""]
+        self.results_df["Thrombolysis"] = [""]
         self.results_df["SDEC Occupancy"] = [0.0]
-        self.results_df["Admission Avoidance"] = [0.0]
+        self.results_df["Admission Avoidance"] = [""]
         self.results_df["MRS Type"] = [0.0]
         self.results_df["MRS DC"] = [0.0]
         self.results_df["MRS Change"] = [0.0]
         self.results_df["Onset Type"] = [0.0]
-        self.results_df["Diagnosis Type"] = [0.0]
+        self.results_df["Diagnosis Type"] = [""]
         self.results_df["Thrombolysis Savings"] = [0.0]
         self.results_df["Ward Occupancy"] = [0.0]
         self.results_df.set_index("Patient ID", inplace=True)
@@ -999,7 +999,7 @@ for x in range(3):
 print ("All Trials Completed")
 
 
-# Combine all trial results into a single dictionary and data frame, I am 
+# Combine all trial results into a single dictionary, I am 
 # currently unaware were the trial_sdec_finacial_savings is stored in class g
 # but it works so I'll leave it for now...
 trial_numbers = g.trial_sdec_financial_savings.keys()
