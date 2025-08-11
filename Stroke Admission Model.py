@@ -879,9 +879,9 @@ class Trial:
                 round(self.df_trial_results[col].mean(), 2)
 
         # Code to store the configuration that was used for this trial.
-        self.trial_info = (\
-            f"Trial {g.trials_run_counter}, SDEC Therapy = {g.therapy_sdec\
-                    }, SDEC Open % = {sdec_value}, CTP Open % = {ctp_value}")
+        self.trial_info = (
+            f"Trial {g.trials_run_counter}, SDEC Therapy = {g.therapy_sdec},"\
+                 f" SDEC Open % = {sdec_value}, CTP Open % = {ctp_value}")
 
         print ("---------------------------------------------------")
         print(f"{self.trial_info}")
