@@ -23,8 +23,8 @@ class g:
     number_of_ward_beds = 49
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
-    mean_n_i_ward_time_mrs_0 = 1440 * 2
-    mean_n_i_ward_time_mrs_1 = 1440 * 3 
+    mean_n_i_ward_time_mrs_0 = 1440 * 7
+    mean_n_i_ward_time_mrs_1 = 1440 * 7 
     mean_n_i_ward_time_mrs_2 = 1440 * 7 
     mean_n_i_ward_time_mrs_3 = 14400
     mean_n_i_ward_time_mrs_4 = 14400 
