@@ -22,22 +22,20 @@ class g:
     mean_n_sdec_time = 240
     number_of_ward_beds = 49
     
-    # Different variables for ward stay based on diagnosis, thrombolysis and MRS
-    mean_n_i_ward_time = 14400
-    
-    mean_n_i_ward_time_mrs_0 = 14400 / 3
-    mean_n_i_ward_time_mrs_1 = 14400 / 2
-    mean_n_i_ward_time_mrs_2 = 14400 
+    # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
+    mean_n_i_ward_time_mrs_0 = 1440 * 2
+    mean_n_i_ward_time_mrs_1 = 1440 * 3 
+    mean_n_i_ward_time_mrs_2 = 1440 * 7 
     mean_n_i_ward_time_mrs_3 = 14400
-    mean_n_i_ward_time_mrs_4 = 14400 * 2
-    mean_n_i_ward_time_mrs_5 = 14400 * 3
+    mean_n_i_ward_time_mrs_4 = 14400 
+    mean_n_i_ward_time_mrs_5 = 14400 * 2 
 
-    mean_n_ich_ward_time_mrs_0 = 17280 / 3
-    mean_n_ich_ward_time_mrs_1 = 17280 / 2
+    mean_n_ich_ward_time_mrs_0 = 17280 
+    mean_n_ich_ward_time_mrs_1 = 17280 
     mean_n_ich_ward_time_mrs_2 = 17280 
     mean_n_ich_ward_time_mrs_3 = 17280
-    mean_n_ich_ward_time_mrs_4 = 17280 * 2
-    mean_n_ich_ward_time_mrs_5 = 17280 * 3
+    mean_n_ich_ward_time_mrs_4 = 17280 
+    mean_n_ich_ward_time_mrs_5 = 17280
 
     mean_n_non_stroke_ward_time = 4320
     mean_n_tia_ward_time = 1440
@@ -579,7 +577,8 @@ class Model:
                 patient.q_time_ward = end_q_ward - start_q_ward
 
                 # The below code checks the patients diagnosis and MRS,
-                # adjusting MRS change and LOS baised on these. 
+                # adjusting MRS change and LOS baised on these. This code is 
+                # for ICH patients. 
 
                 if patient.patient_diagnosis == 0 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
@@ -628,13 +627,45 @@ class Model:
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
                 
-                # The below series of if statements calculate the improvement 
-                # based on diagnosis and MRS type. 
+                # The below code checks the patients diagnosis and MRS,
+                # adjusting MRS change and LOS baised on these. This code is 
+                # for I patients amd also checks for thrombolysis and adjusts 
+                # LOS and associated savings accordingly. 
                 
-                if patient.patient_diagnosis == 1:
+                if patient.patient_diagnosis == 1 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_i_ward_time)
-                    if patient.thrombolysis == True and patient.mrs_type > 1:
+                        (1.0 / g.mean_n_i_ward_time_mrs_0)
+                    patient.mrs_discharge = patient.mrs_type
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 1:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_1)
+                    if patient.thrombolysis == True:
+                        sampled_ward_act_time_thrombolysis = \
+                                sampled_ward_act_time * g.thrombolysis_los_save
+                        patient.mrs_discharge = patient.mrs_type - \
+                            random.randint(0,1)
+                        yield self.env.timeout(\
+                            sampled_ward_act_time_thrombolysis)
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
+                            self.results_df.at[patient.id,\
+                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
+                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
+                            g.inpatient_bed_cost
+                        self.ward_occupancy.remove(patient)
+                    else:
+                        patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                        yield self.env.timeout(sampled_ward_act_time)
+                        self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 2:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_2)
+                    if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
                         patient.mrs_discharge = patient.mrs_type - \
@@ -648,40 +679,83 @@ class Model:
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
                             g.inpatient_bed_cost
                         self.ward_occupancy.remove(patient)
-                    
-                    elif patient.thrombolysis == True and patient.mrs_type == 1:
-                        sampled_ward_act_time_thrombolysis = \
-                                sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,1)
-                        yield self.env.timeout(\
-                            sampled_ward_act_time_thrombolysis)
-                        if self.env.now > g.warm_up_period and\
-                            patient.advanced_ct_pathway == True:
-                            self.results_df.at[patient.id,\
-                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
-                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
-                        self.ward_occupancy.remove(patient)
-                    
-                    elif patient.mrs_type == 0:
-                        patient.mrs_discharge = patient.mrs_type
-                        yield self.env.timeout(sampled_ward_act_time)
-                        self.ward_occupancy.remove(patient)                  
-                    
-                    elif patient.mrs_type >= 1:
+                    else:
                         patient.mrs_discharge = patient.mrs_type -\
                               random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 3:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_3)
+                    if patient.thrombolysis == True:
+                        sampled_ward_act_time_thrombolysis = \
+                                sampled_ward_act_time * g.thrombolysis_los_save
+                        patient.mrs_discharge = patient.mrs_type - \
+                            random.randint(0,2)
+                        yield self.env.timeout(\
+                            sampled_ward_act_time_thrombolysis)
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
+                            self.results_df.at[patient.id,\
+                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
+                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
+                            g.inpatient_bed_cost
+                        self.ward_occupancy.remove(patient)
+                    else:
+                        patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                        yield self.env.timeout(sampled_ward_act_time)
+                        self.ward_occupancy.remove(patient)
 
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 4:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_4)
+                    if patient.thrombolysis == True:
+                        sampled_ward_act_time_thrombolysis = \
+                                sampled_ward_act_time * g.thrombolysis_los_save
+                        patient.mrs_discharge = patient.mrs_type - \
+                            random.randint(0,2)
+                        yield self.env.timeout(\
+                            sampled_ward_act_time_thrombolysis)
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
+                            self.results_df.at[patient.id,\
+                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
+                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
+                            g.inpatient_bed_cost
+                        self.ward_occupancy.remove(patient)
+                    else:
+                        patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                        yield self.env.timeout(sampled_ward_act_time)
+                        self.ward_occupancy.remove(patient)
 
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 5:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_5)
+                    if patient.thrombolysis == True:
+                        sampled_ward_act_time_thrombolysis = \
+                                sampled_ward_act_time * g.thrombolysis_los_save
+                        patient.mrs_discharge = patient.mrs_type - \
+                            random.randint(0,2)
+                        yield self.env.timeout(\
+                            sampled_ward_act_time_thrombolysis)
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
+                            self.results_df.at[patient.id,\
+                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
+                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
+                            g.inpatient_bed_cost
+                        self.ward_occupancy.remove(patient)
+                    else:
+                        patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                        yield self.env.timeout(sampled_ward_act_time)
+                        self.ward_occupancy.remove(patient)
 
+            # The below code is for the non stroke diagnosis.
 
-
-
-                    
                 if patient.patient_diagnosis == 2:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_tia_ward_time)
