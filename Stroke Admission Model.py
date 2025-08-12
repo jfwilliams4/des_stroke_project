@@ -21,10 +21,25 @@ class g:
     sdec_beds = 5
     mean_n_sdec_time = 240
     number_of_ward_beds = 49
-    #Different variables for ward stay based on diagnosis / thrombolysis
-    mean_n_non_stroke_ward_time = 4320
+    
+    # Different variables for ward stay based on diagnosis, thrombolysis and MRS
     mean_n_i_ward_time = 14400
-    mean_n_ich_ward_time = 17280
+    
+    mean_n_i_ward_time_mrs_0 = 14400 / 3
+    mean_n_i_ward_time_mrs_1 = 14400 / 2
+    mean_n_i_ward_time_mrs_2 = 14400 
+    mean_n_i_ward_time_mrs_3 = 14400
+    mean_n_i_ward_time_mrs_4 = 14400 * 2
+    mean_n_i_ward_time_mrs_5 = 14400 * 3
+
+    mean_n_ich_ward_time_mrs_0 = 17280 / 3
+    mean_n_ich_ward_time_mrs_1 = 17280 / 2
+    mean_n_ich_ward_time_mrs_2 = 17280 
+    mean_n_ich_ward_time_mrs_3 = 17280
+    mean_n_ich_ward_time_mrs_4 = 17280 * 2
+    mean_n_ich_ward_time_mrs_5 = 17280 * 3
+
+    mean_n_non_stroke_ward_time = 4320
     mean_n_tia_ward_time = 1440
     thrombolysis_los_save = 0.75
     
@@ -563,23 +578,59 @@ class Model:
 
                 patient.q_time_ward = end_q_ward - start_q_ward
 
-                # The below series of if statements calculate the improvement 
-                # based on diagnosis, starting MRS and thrombolysis status.
+                # The below code checks the patients diagnosis and MRS,
+                # adjusting MRS change and LOS baised on these. 
 
-                if patient.patient_diagnosis == 0:
+                if patient.patient_diagnosis == 0 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time)
-                    if patient.mrs_type == 0:
-                        patient.mrs_discharge = patient.mrs_type
-                    if patient.mrs_type >= 1:
-                        patient.mrs_discharge = patient.mrs_type -\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_0)
+                    patient.mrs_discharge = patient.mrs_type
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 1:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_1)
+                    patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 2:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_2)
+                    patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 3:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_3)
+                    patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 4:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_4)
+                    patient.mrs_discharge = patient.mrs_type -\
+                              random.randint(0,1)
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 5:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_5)
+                    patient.mrs_discharge = patient.mrs_type -\
                               random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
                 
-                # The below code adjusts the length of stay based on if the 
-                # patient has had thrombolysis or not.
-
+                # The below series of if statements calculate the improvement 
+                # based on diagnosis and MRS type. 
+                
                 if patient.patient_diagnosis == 1:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_i_ward_time)
@@ -623,7 +674,14 @@ class Model:
                               random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
-                        
+
+
+
+
+
+
+
+                    
                 if patient.patient_diagnosis == 2:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_tia_ward_time)
