@@ -152,6 +152,7 @@ class Model:
         self.results_df["Diagnosis Type"] = [""]
         self.results_df["Thrombolysis Savings"] = [0.0]
         self.results_df["Ward Occupancy"] = [0.0]
+        self.results_df["Arrival Time"] = [0.0]
         self.results_df.set_index("Patient ID", inplace=True)
 
         # A variable to count the number of SDEC freezes
@@ -211,7 +212,7 @@ class Model:
             self.env.process(self.stroke_assessment(p))
 
             # Randomly sample the time to the next patient arriving.
-            sampled_inter = random.normalvariate(g.patient_inter, 2)
+            sampled_inter = random.normalvariate(g.patient_inter, 25)
 
             # Freeze this instance of this function in place until the
             # inter-arrival time has elapsed.
@@ -286,6 +287,17 @@ class Model:
         start_q_nurse = self.env.now
 
         self.q_for_assessment.append(patient)
+
+        # Add the arrival time to the main DF, this is mainly to test if the 
+        # patinet arrival times mirror the real world data 
+
+        patient.clock_start = self.env.now
+
+
+        if self.env.now > g.warm_up_period:
+            self.results_df.at[patient.id, "Arrival Time"] = (
+                patient.clock_start)
+
 
         # This code says request a nurse resource, and do all of the following
         # block of code with that nurse resource held in place (and therefore
