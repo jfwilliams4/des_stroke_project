@@ -11,9 +11,9 @@ import csv
 class g:
     #525600 (Year of Minutes)
     sim_duration = 525600
-    number_of_runs = 5
+    number_of_runs = 10
     warm_up_period = sim_duration / 5
-    patient_inter = 180
+    patient_inter = 200
     number_of_nurses = 2
     mean_n_consult_time = 120
     mean_n_ct_time = 20
@@ -23,19 +23,19 @@ class g:
     number_of_ward_beds = 49
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
-    mean_n_i_ward_time_mrs_0 = 1440 * 7
-    mean_n_i_ward_time_mrs_1 = 1440 * 7 
-    mean_n_i_ward_time_mrs_2 = 1440 * 7 
-    mean_n_i_ward_time_mrs_3 = 14400
-    mean_n_i_ward_time_mrs_4 = 14400 
-    mean_n_i_ward_time_mrs_5 = 14400 * 2 
+    mean_n_i_ward_time_mrs_0 = 1440 * 6
+    mean_n_i_ward_time_mrs_1 = 1440 * 4 
+    mean_n_i_ward_time_mrs_2 = 1440 * 8 
+    mean_n_i_ward_time_mrs_3 = 1440 * 11
+    mean_n_i_ward_time_mrs_4 = 1440 * 24
+    mean_n_i_ward_time_mrs_5 = 1440 * 29 
 
-    mean_n_ich_ward_time_mrs_0 = 17280 
-    mean_n_ich_ward_time_mrs_1 = 17280 
-    mean_n_ich_ward_time_mrs_2 = 17280 
-    mean_n_ich_ward_time_mrs_3 = 17280
-    mean_n_ich_ward_time_mrs_4 = 17280 
-    mean_n_ich_ward_time_mrs_5 = 17280
+    mean_n_ich_ward_time_mrs_0 = 1440 * 5 
+    mean_n_ich_ward_time_mrs_1 = 1440 * 4
+    mean_n_ich_ward_time_mrs_2 = 1440 * 5
+    mean_n_ich_ward_time_mrs_3 = 1440 * 17
+    mean_n_ich_ward_time_mrs_4 = 1440 * 36
+    mean_n_ich_ward_time_mrs_5 = 1440 * 36
 
     mean_n_non_stroke_ward_time = 4320
     mean_n_tia_ward_time = 1440
@@ -211,7 +211,7 @@ class Model:
             self.env.process(self.stroke_assessment(p))
 
             # Randomly sample the time to the next patient arriving.
-            sampled_inter = random.expovariate(1.0 / g.patient_inter)
+            sampled_inter = random.normalvariate(g.patient_inter, 2)
 
             # Freeze this instance of this function in place until the
             # inter-arrival time has elapsed.
