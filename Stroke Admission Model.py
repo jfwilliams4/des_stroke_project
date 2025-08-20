@@ -214,7 +214,7 @@ class Model:
             # Log Normal Distribution
 
             mean = g.patient_inter
-            sigma = 1.0  
+            sigma = 0.8  
             mu = np.log(mean) - 0.5 * sigma**2
             sampled_inter = random.lognormvariate(mu, sigma)
 
