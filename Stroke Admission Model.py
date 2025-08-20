@@ -211,8 +211,23 @@ class Model:
             # patient's journey through the system)
             self.env.process(self.stroke_assessment(p))
 
-            # Randomly sample the time to the next patient arriving.
-            sampled_inter = random.normalvariate(g.patient_inter, 25)
+            # Log Normal Distribution
+
+            mean = g.patient_inter
+            sigma = 1.0  
+            mu = np.log(mean) - 0.5 * sigma**2
+            sampled_inter = random.lognormvariate(mu, sigma)
+
+            # Normal Distribution 
+            
+            #mean = g.patient_inter
+            #std_dev = g.patient_inter * 1
+            #sampled_inter = max(1, random.normalvariate(mean, std_dev))
+
+
+            # Exponential Distribution
+
+            #sampled_inter = random.expovariate(1.0 / g.patient_inter)
 
             # Freeze this instance of this function in place until the
             # inter-arrival time has elapsed.
