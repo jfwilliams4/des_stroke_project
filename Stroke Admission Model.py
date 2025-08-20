@@ -20,7 +20,7 @@ class g:
     number_of_ctp = 1
     sdec_beds = 5
     mean_n_sdec_time = 240
-    number_of_ward_beds = 49
+    number_of_ward_beds = 51
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
     mean_n_i_ward_time_mrs_0 = 1440 * 6
@@ -214,7 +214,7 @@ class Model:
             # Log Normal Distribution
 
             mean = g.patient_inter
-            sigma = 0.8  
+            sigma = 1
             mu = np.log(mean) - 0.5 * sigma**2
             sampled_inter = random.lognormvariate(mu, sigma)
 
