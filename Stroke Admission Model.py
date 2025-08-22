@@ -13,9 +13,9 @@ class g:
     sim_duration = 525600
     number_of_runs = 10
     warm_up_period = sim_duration / 5
-    patient_inter = 200
+    patient_inter = 5
     number_of_nurses = 2
-    mean_n_consult_time = 120
+    mean_n_consult_time = 60
     mean_n_ct_time = 20
     number_of_ctp = 1
     sdec_beds = 5
@@ -211,23 +211,17 @@ class Model:
             # patient's journey through the system)
             self.env.process(self.stroke_assessment(p))
 
-            # Log Normal Distribution
-
-            mean = g.patient_inter
-            sigma = 1
-            mu = np.log(mean) - 0.5 * sigma**2
-            sampled_inter = random.lognormvariate(mu, sigma)
 
             # Normal Distribution 
             
-            #mean = g.patient_inter
-            #std_dev = g.patient_inter * 1
-            #sampled_inter = max(1, random.normalvariate(mean, std_dev))
+            # mean = g.patient_inter
+            # std_dev = g.patient_inter * 1
+            # sampled_inter = max(1, random.normalvariate(mean, std_dev))
 
 
             # Exponential Distribution
 
-            #sampled_inter = random.expovariate(1.0 / g.patient_inter)
+            sampled_inter = random.expovariate(0.025 / g.patient_inter)
 
             # Freeze this instance of this function in place until the
             # inter-arrival time has elapsed.
