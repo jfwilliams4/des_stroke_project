@@ -20,7 +20,7 @@ class g:
     number_of_ctp = 1
     sdec_beds = 5
     mean_n_sdec_time = 240
-    number_of_ward_beds = 51
+    number_of_ward_beds = 1
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
     mean_n_i_ward_time_mrs_0 = 1440 * 6
@@ -1095,6 +1095,18 @@ while graph_input == False:
 
 
 for x in range(3):
+
+    # Code to ask the user how many beds are active on the unit.
+
+    user_ward_beds = False
+
+    while user_ward_beds == False:
+
+        g.number_of_ward_beds = int(input("Choose Number of Ward Beds"))
+        if g.number_of_ward_beds > 0:
+            user_ward_beds = True
+        else:
+            print ("Invalid Input Please Try Again")
 
     # This code asks if the user wants to have full therapy support for the SDEC
 
