@@ -401,13 +401,37 @@ class Model:
                 self.results_df.at[patient.id, "Time with CT"] = (
                 sampled_ct_act_time)   
 
-        # The below code records the status of both the CTP and SDEC pathways.
+        # The below code records the status of both the CTP pathway.
         # Both exist as generators and this data is record to ensure they are 
         # operating as expected.
 
         if self.env.now > g.warm_up_period: 
             self.results_df.at[patient.id, "CTP Status"] = (
             g.ctp_unav)
+
+        # The below code checks the patient's attributes to see if the 
+        # thrombolysis attribute should be changed to True, this is based off 
+        # the patient diagnosis, onset type and mrs type. There are different 
+        # conditions depending on if CTP is available or not.
+
+        if patient.patient_diagnosis == 1 and patient.onset_type == 0 \
+            and patient.mrs_type > 0:
+            patient.thrombolysis = True
+
+        if patient.patient_diagnosis == 1 and patient.onset_type == 1 and\
+              patient.advanced_ct_pathway == True and patient.mrs_type > 0:
+            patient.thrombolysis = True
+
+        # Thrombolysis status is added to the DF, this is mainly used to check 
+        # if it is being applied correctly.
+
+        if self.env.now > g.warm_up_period:
+            self.results_df.at[patient.id, "Thrombolysis"] = (
+                patient.thrombolysis)
+
+        # The below code records the status of both the SDEC pathway.
+        # Both exist as generators and this data is record to ensure they are 
+        # operating as expected.
 
         if self.env.now > g.warm_up_period:
             self.results_df.at[patient.id, "SDEC Status"] = (
@@ -432,7 +456,23 @@ class Model:
                 len(self.sdec_occupancy))
 
             patient.sdec_pathway = True
+
+            # This code checks if the patient is eligible for admission  
+            # avoidance depending on if therapy support is enabled.
+
+            if g.therapy_sdec == False:  
             
+                if patient.patient_diagnosis < 2  and patient.mrs_type < 2\
+                      and patient.thrombolysis == False:
+                
+                    patient.admission_avoidance = True
+
+            elif g.therapy_sdec == True:
+            
+                if patient.patient_diagnosis < 2 and patient.mrs_type < 3\
+                      and patient.thrombolysis == False:
+                
+                    patient.admission_avoidance = True
 
             sampled_sdec_stay_time = random.expovariate(1.0 / 
                                                         g.mean_n_sdec_time)
@@ -444,7 +484,9 @@ class Model:
             # This code checks if the ward is full, if this is the case the 
             # patient will not be released from the SDEC, thus impeding it use  
 
-            while len(self.ward_occupancy) >= g.number_of_ward_beds:
+            if patient.admission_avoidance != True:
+
+                while len(self.ward_occupancy) >= g.number_of_ward_beds:
                     yield self.env.timeout(1)
 
             # Once the above code is complete the patient is removed from the 
@@ -457,26 +499,6 @@ class Model:
             if self.env.now > g.warm_up_period:
                 self.results_df.at[patient.id, "Time in SDEC"] =\
                       (sampled_sdec_stay_time)
-
-        # The below code checks the patient's attributes to see if the 
-        # thrombolysis attribute should be changed to True, this is based off 
-        # the patient diagnosis, onset type and mrs type. There are different 
-        # conditions depending on if CTP is available or not.
-
-        if patient.patient_diagnosis == 1 and patient.onset_type == 0 \
-            and patient.mrs_type > 0:
-            patient.thrombolysis = True
-
-        if patient.patient_diagnosis == 1 and patient.onset_type == 1 and\
-              patient.advanced_ct_pathway == True and patient.mrs_type > 0:
-            patient.thrombolysis = True
-
-        # Thrombolysis status is added to the DF, this is mainly used to check 
-        # if it is being applied correctly.
-
-        if self.env.now > g.warm_up_period:
-            self.results_df.at[patient.id, "Thrombolysis"] = (
-                patient.thrombolysis)
 
         # The below code records the patients diagnosis attribute, this is added
         # to the DF to check the diagnosis code is working correctly.
@@ -496,53 +518,24 @@ class Model:
             self.results_df.at[patient.id, "Onset Type"] = (
             patient.onset_type)
 
-        # This code checks if the patient is eligible for admission avoidance 
-        # with no therapy support enabled
-
-        if g.therapy_sdec == False:  
+        # This code add information regarding the patients admission avoidance.
+  
+        if patient.admission_avoidance == True:
             
-            if patient.patient_diagnosis < 2 and patient.sdec_pathway == \
-                True and patient.mrs_type < 2 and patient.thrombolysis == False:
-                
-                patient.admission_avoidance = True
-                if self.env.now > g.warm_up_period:
-                    self.results_df.at[patient.id, "Admission Avoidance"] = (
-                    patient.sdec_pathway)
+            if self.env.now > g.warm_up_period:
+                self.results_df.at[patient.id, "Admission Avoidance"] = (
+                patient.sdec_pathway)
 
-                    last_index = self.results_df\
-                        ["SDEC Savings"].last_valid_index()
-                    last_value = self.results_df.loc[last_index, "SDEC Savings"]
-                    if last_index > 0 and pd.notnull:
-                        self.results_df.at[patient.id, "SDEC Savings"] = \
-                            (last_value + g.inpatient_bed_cost)
+                last_index = self.results_df\
+                    ["SDEC Savings"].last_valid_index()
+                last_value = self.results_df.loc[last_index, "SDEC Savings"]
+                if last_index > 0 and pd.notnull:
+                    self.results_df.at[patient.id, "SDEC Savings"] = \
+                        (last_value + g.inpatient_bed_cost)
 
-                    else:
-                        self.results_df.at[patient.id, "SDEC Savings"] = \
-                            (g.inpatient_bed_cost)
-
-        # This code checks if the patient is eligible for admission avoidance 
-        # with therapy support enabled
-
-        if g.therapy_sdec == True:
-            
-            if patient.patient_diagnosis < 2 and patient.sdec_pathway == \
-                True and patient.mrs_type < 3 and patient.thrombolysis == False:
-                
-                patient.admission_avoidance = True
-                if self.env.now > g.warm_up_period:
-                    self.results_df.at[patient.id, "Admission Avoidance"] = (
-                    patient.sdec_pathway)
-
-                    last_index = self.results_df\
-                        ["SDEC Savings"].last_valid_index()
-                    last_value = self.results_df.loc[last_index, "SDEC Savings"]
-                    if last_index > 0 and pd.notnull:
-                        self.results_df.at[patient.id, "SDEC Savings"] = \
-                            (last_value + g.inpatient_bed_cost)
-
-                    else:
-                        self.results_df.at[patient.id, "SDEC Savings"] = \
-                            (g.inpatient_bed_cost)
+                else:
+                    self.results_df.at[patient.id, "SDEC Savings"] = \
+                        (g.inpatient_bed_cost)
 
         # This code adds the Patient's MRS to the DF, this can be used to check
         # all code that interacts with this runs correctly.
