@@ -145,6 +145,7 @@ class Model:
         self.results_df["Thrombolysis"] = [""]
         self.results_df["SDEC Occupancy"] = [0.0]
         self.results_df["Admission Avoidance"] = [""]
+        self.results_df["SDEC Savings"] = [0.0]
         self.results_df["MRS Type"] = [0.0]
         self.results_df["MRS DC"] = [0.0]
         self.results_df["MRS Change"] = [0.0]
@@ -508,6 +509,17 @@ class Model:
                     self.results_df.at[patient.id, "Admission Avoidance"] = (
                     patient.sdec_pathway)
 
+                    last_index = self.results_df\
+                        ["SDEC Savings"].last_valid_index()
+                    last_value = self.results_df.loc[last_index, "SDEC Savings"]
+                    if last_index > 0 and pd.notnull:
+                        self.results_df.at[patient.id, "SDEC Savings"] = \
+                            (last_value + g.inpatient_bed_cost)
+
+                    else:
+                        self.results_df.at[patient.id, "SDEC Savings"] = \
+                            (g.inpatient_bed_cost)
+
         # This code checks if the patient is eligible for admission avoidance 
         # with therapy support enabled
 
@@ -520,6 +532,17 @@ class Model:
                 if self.env.now > g.warm_up_period:
                     self.results_df.at[patient.id, "Admission Avoidance"] = (
                     patient.sdec_pathway)
+
+                    last_index = self.results_df\
+                        ["SDEC Savings"].last_valid_index()
+                    last_value = self.results_df.loc[last_index, "SDEC Savings"]
+                    if last_index > 0 and pd.notnull:
+                        self.results_df.at[patient.id, "SDEC Savings"] = \
+                            (last_value + g.inpatient_bed_cost)
+
+                    else:
+                        self.results_df.at[patient.id, "SDEC Savings"] = \
+                            (g.inpatient_bed_cost)
 
         # This code adds the Patient's MRS to the DF, this can be used to check
         # all code that interacts with this runs correctly.
