@@ -473,6 +473,21 @@ class Model:
                       and patient.thrombolysis == False:
                 
                     patient.admission_avoidance = True
+            
+            # This code applies a non stroke admission avoidance variable to the
+            # patient.
+
+            self.tia_admission_chance = random.normalvariate(g.tia_admission, 1)
+            self.stroke_mimic_admission_chance = random.normalvariate(
+                g.stroke_mimic_admission, 1)
+
+            if patient.non_admission >= self.tia_admission_chance and \
+                patient.patient_diagnosis == 2:
+                patient.admission_avoidance = True
+
+            elif patient.non_admission >= self.stroke_mimic_admission_chance\
+                  and patient.patient_diagnosis > 2:
+                patient.admission_avoidance = True           
 
             sampled_sdec_stay_time = random.expovariate(1.0 / 
                                                         g.mean_n_sdec_time)
@@ -520,7 +535,8 @@ class Model:
 
         # This code add information regarding the patients admission avoidance.
   
-        if patient.admission_avoidance == True:
+        if patient.admission_avoidance == True and patient.patient_diagnosis\
+              < 2:
             
             if self.env.now > g.warm_up_period:
                 self.results_df.at[patient.id, "Admission Avoidance"] = (
@@ -547,8 +563,8 @@ class Model:
         # Patients with a True admission avoidance are added to a list that is 
         # used to calculate the savings from the avoided admissions. 
 
-        if patient.admission_avoidance == True and self.env.now > \
-            g.warm_up_period:
+        if patient.admission_avoidance == True and patient.patient_diagnosis\
+              and self.env.now > g.warm_up_period:
             self.admission_avoidance.append(patient)
 
         # This code introduces a small element of randomness into the admission
@@ -562,14 +578,13 @@ class Model:
         # added to the admission avoidance list, as that should only be for 
         # SDEC patients who avoid admission. This code checks if TIA, non stroke
         # and stroke mimic patients should be admitted based on the values 
-        # established in the previous code and g class. (To me it looks like 
-        # the < & > signs are the wrong way round, but this is correct).
+        # established in the previous code and g class.
 
         if patient.non_admission >= self.tia_admission_chance and \
             patient.patient_diagnosis == 2:
             patient.admission_avoidance = True
 
-        if patient.non_admission >= self.stroke_mimic_admission_chance and \
+        elif patient.non_admission >= self.stroke_mimic_admission_chance and \
             patient.patient_diagnosis > 2:
             patient.admission_avoidance = True            
 
