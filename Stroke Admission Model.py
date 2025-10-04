@@ -563,8 +563,8 @@ class Model:
         # Patients with a True admission avoidance are added to a list that is 
         # used to calculate the savings from the avoided admissions. 
 
-        if patient.admission_avoidance == True and patient.patient_diagnosis\
-              and self.env.now > g.warm_up_period:
+        if patient.admission_avoidance == True and patient.patient_diagnosis \
+              < 2 and self.env.now > g.warm_up_period:
             self.admission_avoidance.append(patient)
 
         # This code introduces a small element of randomness into the admission
