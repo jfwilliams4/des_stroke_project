@@ -469,7 +469,7 @@ class Model:
 
             elif g.therapy_sdec == True:
             
-                if patient.patient_diagnosis < 2 and patient.mrs_type < 3\
+                if patient.patient_diagnosis < 2 and patient.mrs_type <= 3\
                       and patient.thrombolysis == False:
                 
                     patient.admission_avoidance = True
