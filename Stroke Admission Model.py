@@ -13,7 +13,8 @@ class g:
     sim_duration = 525600
     number_of_runs = 10
     warm_up_period = sim_duration / 5
-    patient_inter = 5
+    patient_inter_day = 5
+    patient_inter_night = 5
     number_of_nurses = 2
     mean_n_consult_time = 60
     mean_n_ct_time = 20
@@ -75,6 +76,8 @@ class g:
     gen_graph = False
     therapy_sdec = False
     trials_run_counter = 1
+    patient_arrival_gen_1 = False
+    patient_arrival_gen_2 = False
 
 # Patient class to store patient attributes
 
@@ -111,7 +114,7 @@ class Model:
         # Create a SimPy environment
         self.env = simpy.Environment()
 
-        # Create a patient counter for the patient ID
+        # Create a patient counter for the first patient Generator
         self.patient_counter = 0
 
         # Create a SimPy resources to represent stroke nurses, ctp scanners,
@@ -154,6 +157,8 @@ class Model:
         self.results_df["Thrombolysis Savings"] = [0.0]
         self.results_df["Ward Occupancy"] = [0.0]
         self.results_df["Arrival Time"] = [0.0]
+        self.results_df["Patient Gen 1 Status"] = [""]
+        self.results_df["Patient Gen 2 Status"] = [""]
         self.results_df.set_index("Patient ID", inplace=True)
 
         # A variable to count the number of SDEC freezes
@@ -195,39 +200,73 @@ class Model:
         self.occupancy_graph_df["Time"] = [0.0]
         self.occupancy_graph_df["Ward Occupancy"] = [0.0]
 
-    # A generator function for the patient arrivals. This is an infinite loop
+    # A generator function for the patient arrivals in hours.
     def generator_patient_arrivals(self):
 
         while True:
-            # Increment the patient counter by 1 for each new patient
-            self.patient_counter += 1
-            
-            # Create a new patient - an instance of the Patient Class we
-            # defined above. patient counter ID passed from above to patient 
-            # class.
-            p = Patient(self.patient_counter)
 
-            # Tell SimPy to start the stroke assessment function with
-            # this patient (the generator function that will model the
-            # patient's journey through the system)
-            self.env.process(self.stroke_assessment(p))
+            if 0 <= self.env.now % 1440 < 960:
 
+                # Change the Global Class variable for the generator to TRUE
+                g.patient_arrival_gen_1 = True
+                g.patient_arrival_gen_2 = False
 
-            # Normal Distribution 
-            
-            # mean = g.patient_inter
-            # std_dev = g.patient_inter * 1
-            # sampled_inter = max(1, random.normalvariate(mean, std_dev))
+                # Increment the patient counter by 1 for each new patient
+                self.patient_counter += 1
+                
+                # Create a new patient - an instance of the Patient Class we
+                # defined above. patient counter ID passed from above to patient 
+                # class.
+                p = Patient(self.patient_counter)
 
+                # Tell SimPy to start the stroke assessment function with
+                # this patient (the generator function that will model the
+                # patient's journey through the system)
+                self.env.process(self.stroke_assessment(p))
 
-            # Exponential Distribution
+                sampled_inter = random.expovariate(0.025 / g.patient_inter_day)
 
-            sampled_inter = random.expovariate(0.025 / g.patient_inter)
+                # Freeze this instance of this function in place until the
+                # inter-arrival time has elapsed.
+                yield self.env.timeout(sampled_inter)
 
-            # Freeze this instance of this function in place until the
-            # inter-arrival time has elapsed.
-            yield self.env.timeout(sampled_inter)
+            else:
+                yield self.env.timeout(1)
+                
+    # A generator function for the patient arrivals out of hours. 
+    def generator_patient_arrivals_ooh(self):
 
+        while True:
+
+            if 960 <= self.env.now % 1440 < 1440:
+
+                # Change the Global Class variable for the generator to TRUE
+                g.patient_arrival_gen_1 = False
+                g.patient_arrival_gen_2 = True
+
+                # Increment the patient counter by 1 for each new patient
+                self.patient_counter += 1
+                
+                # Create a new patient - an instance of the Patient Class we
+                # defined above. patient counter ID passed from above to patient 
+                # class.
+                p = Patient(self.patient_counter)
+
+                # Tell SimPy to start the stroke assessment function with
+                # this patient (the generator function that will model the
+                # patient's journey through the system)
+                self.env.process(self.stroke_assessment(p))
+
+                sampled_inter = random.expovariate(0.0075 / 
+                                                   g.patient_inter_night)
+
+                # Freeze this instance of this function in place until the
+                # inter-arrival time has elapsed.
+                yield self.env.timeout(sampled_inter)
+
+            else:
+                yield self.env.timeout(1)
+                
     def obstruct_ctp(self):
         while True:
             yield self.env.timeout(g.ctp_unav_freq)
@@ -307,7 +346,12 @@ class Model:
         if self.env.now > g.warm_up_period:
             self.results_df.at[patient.id, "Arrival Time"] = (
                 patient.clock_start)
-
+            
+            self.results_df.at[patient.id, "Patient Gen 1 Status"] = (
+                g.patient_arrival_gen_1)
+            
+            self.results_df.at[patient.id, "Patient Gen 2 Status"] = (
+                g.patient_arrival_gen_2)
 
         # This code says request a nurse resource, and do all of the following
         # block of code with that nurse resource held in place (and therefore
@@ -949,6 +993,7 @@ class Model:
         # starts up the generators in the model, of which there are three.
 
         self.env.process(self.generator_patient_arrivals())
+        self.env.process(self.generator_patient_arrivals_ooh())
         self.env.process(self.obstruct_ctp())
         self.env.process(self.obstruct_sdec())
 
