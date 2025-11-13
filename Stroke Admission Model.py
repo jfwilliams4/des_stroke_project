@@ -44,6 +44,7 @@ class g:
     
     sdec_dr_cost_min = 0.50
     inpatient_bed_cost = 876
+    inpatient_bed_cost_thrombolysis = 528.17
     mean_mrs = 2
     
     # Diagnosis % range
@@ -750,7 +751,7 @@ class Model:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
+                            g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
                         patient.mrs_discharge = patient.mrs_type -\
@@ -773,7 +774,7 @@ class Model:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
+                            g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
                         patient.mrs_discharge = patient.mrs_type -\
@@ -796,7 +797,7 @@ class Model:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
+                            g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
                         patient.mrs_discharge = patient.mrs_type -\
@@ -819,7 +820,7 @@ class Model:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
+                            g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
                         patient.mrs_discharge = patient.mrs_type -\
@@ -842,7 +843,7 @@ class Model:
                             self.results_df.at[patient.id,\
                          "Thrombolysis Savings"] = (((sampled_ward_act_time\
                          - sampled_ward_act_time_thrombolysis)/60)/24)*\
-                            g.inpatient_bed_cost
+                            g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
                         patient.mrs_discharge = patient.mrs_type -\
