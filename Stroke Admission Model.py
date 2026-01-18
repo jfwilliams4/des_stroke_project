@@ -12,7 +12,7 @@ class g:
     #525600 (Year of Minutes)
     sim_duration = 525600
     number_of_runs = 10
-    warm_up_period = 0
+    warm_up_period = sim_duration / 5
     patient_inter_day = 5
     patient_inter_night = 5
     number_of_nurses = 2
@@ -156,6 +156,8 @@ class Model:
         self.results_df["Onset Type"] = [0.0]
         self.results_df["Diagnosis Type"] = [""]
         self.results_df["Diangosis Value"] = [""]
+        self.results_df["Patient Flow Check 1"] = [""]
+        self.results_df["Patient Flow Check 2"] = [""]
         self.results_df["Thrombolysis Savings"] = [0.0]
         self.results_df["Ward Occupancy"] = [0.0]
         self.results_df["Arrival Time"] = [0.0]
@@ -486,9 +488,15 @@ class Model:
             self.results_df.at[patient.id, "SDEC Status"] = (
             g.sdec_unav)
 
+        # This code is used to check the flow of patients through the model, to 
+        # ensure no patients are being lost.
+
+        if self.env.now > g.warm_up_period:
+            self.results_df.at[patient.id, "Patient Flow Check 1"] = ("Yes")
+
         # The if statement below checks if the SDEC pathway is active at this 
         # given time and if there is space in the SDEC itself.
-
+        
         if g.sdec_unav == False and len(self.sdec_occupancy) < g.sdec_beds:
                 
             # If the conditions above are met the patient attribute for the SDEC
@@ -608,7 +616,13 @@ class Model:
         if self.env.now > g.warm_up_period:
             self.results_df.at[patient.id, "MRS Type"] = (
             patient.mrs_type)
-        
+
+        # This code is used to check the flow of patients through the model, to 
+        # ensure no patients are being lost.
+
+        if self.env.now > g.warm_up_period:
+            self.results_df.at[patient.id, "Patient Flow Check 2"] = ("Yes")
+
         # Patients with a True admission avoidance are added to a list that is 
         # used to calculate the savings from the avoided admissions. 
 
