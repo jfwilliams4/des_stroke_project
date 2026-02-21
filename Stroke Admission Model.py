@@ -24,22 +24,22 @@ class g:
     number_of_ward_beds = 1
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
-    mean_n_i_ward_time_mrs_0 = 1440 * 6
+    mean_n_i_ward_time_mrs_0 = 1440 * 3
     mean_n_i_ward_time_mrs_1 = 1440 * 4 
-    mean_n_i_ward_time_mrs_2 = 1440 * 8 
-    mean_n_i_ward_time_mrs_3 = 1440 * 11
-    mean_n_i_ward_time_mrs_4 = 1440 * 24
-    mean_n_i_ward_time_mrs_5 = 1440 * 29 
+    mean_n_i_ward_time_mrs_2 = 1440 * 7 
+    mean_n_i_ward_time_mrs_3 = 1440 * 14
+    mean_n_i_ward_time_mrs_4 = 1440 * 26
+    mean_n_i_ward_time_mrs_5 = 1440 * 28 
 
-    mean_n_ich_ward_time_mrs_0 = 1440 * 5 
-    mean_n_ich_ward_time_mrs_1 = 1440 * 4
-    mean_n_ich_ward_time_mrs_2 = 1440 * 5
-    mean_n_ich_ward_time_mrs_3 = 1440 * 17
-    mean_n_ich_ward_time_mrs_4 = 1440 * 36
-    mean_n_ich_ward_time_mrs_5 = 1440 * 36
+    mean_n_ich_ward_time_mrs_0 = 1440 * 3 
+    mean_n_ich_ward_time_mrs_1 = 1440 * 7
+    mean_n_ich_ward_time_mrs_2 = 1440 * 12
+    mean_n_ich_ward_time_mrs_3 = 1440 * 19
+    mean_n_ich_ward_time_mrs_4 = 1440 * 32
+    mean_n_ich_ward_time_mrs_5 = 1440 * 42
 
-    mean_n_non_stroke_ward_time = 4320
-    mean_n_tia_ward_time = 1440
+    mean_n_non_stroke_ward_time = 1440 * 5
+    mean_n_tia_ward_time = 1440 * 2
     thrombolysis_los_save = 0.75
     
     sdec_dr_cost_min = 0.50
