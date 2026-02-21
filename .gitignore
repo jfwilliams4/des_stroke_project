@@ -59,3 +59,4 @@ trial 5 trial results.csv
 all_trial_results.csv
 
 .DS_Store
+.vscode
