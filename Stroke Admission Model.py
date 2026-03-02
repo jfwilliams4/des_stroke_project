@@ -28,15 +28,15 @@ class g:
     mean_n_i_ward_time_mrs_1 = 1440 * 4 
     mean_n_i_ward_time_mrs_2 = 1440 * 7 
     mean_n_i_ward_time_mrs_3 = 1440 * 14
-    mean_n_i_ward_time_mrs_4 = 1440 * 26
-    mean_n_i_ward_time_mrs_5 = 1440 * 28 
+    mean_n_i_ward_time_mrs_4 = 1440 * 25
+    mean_n_i_ward_time_mrs_5 = 1440 * 31 
 
     mean_n_ich_ward_time_mrs_0 = 1440 * 3 
     mean_n_ich_ward_time_mrs_1 = 1440 * 7
-    mean_n_ich_ward_time_mrs_2 = 1440 * 12
+    mean_n_ich_ward_time_mrs_2 = 1440 * 11
     mean_n_ich_ward_time_mrs_3 = 1440 * 19
-    mean_n_ich_ward_time_mrs_4 = 1440 * 32
-    mean_n_ich_ward_time_mrs_5 = 1440 * 42
+    mean_n_ich_ward_time_mrs_4 = 1440 * 34
+    mean_n_ich_ward_time_mrs_5 = 1440 * 43
 
     mean_n_non_stroke_ward_time = 1440 * 5
     mean_n_tia_ward_time = 1440 * 2
