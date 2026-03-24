@@ -45,13 +45,24 @@ class g:
     sdec_dr_cost_min = 0.50
     inpatient_bed_cost = 876
     inpatient_bed_cost_thrombolysis = 528.17
-    mean_mrs = 2
-    
+
     # Diagnosis % range
     ich = 10
     i = 60
     tia = 70
     stroke_mimic = 80
+
+    # MRS % range - this is used to assign a MRS to a patient rather than using
+    # a expon distribution as the MRS. There are different ranges for each
+    # diagnosis
+
+    mrs_i_0 = 9
+    mrs_i_1 = 27
+    mrs_i_2 = 44
+    mrs_i_3 = 62
+    mrs_i_4 = 90
+
+
 
     # Admission Range (% Chance of Admission) for TIA and Stroke Mimic, non 
     # stroke shares the range with stroke mimic in this model. (This is 
@@ -91,7 +102,7 @@ class Patient:
         # ctp range)
         self.onset_type = random.randint(0, 2)
         #Max MRS is set to 5
-        self.mrs_type = min(round(random.expovariate(1.0 / g.mean_mrs)), 5)
+        self.mrs_type = random.randint(0, 100)
         self.mrs_discharge = 0
         #<=5 is ICH, <=55 is I, <= 70 is TIA, <=85 is Stroke Mimic, >85 is non\
         # stroke, this set in g class
@@ -338,6 +349,21 @@ class Model:
         if self.env.now > g.warm_up_period:
             self.results_df.at[patient.id, "Diangosis Value"] = (
                 patient.diagnosis)
+            
+        if self.mrs_type <= self.mrs_i_0:
+            patient.mrs_type = 0
+        elif patient.mrs_type <= mrs_1:
+            patient.mrs_type = 1
+        elif patient.mrs_type <= mrs_2:
+            patient.mrs_type = 2
+        elif patient.mrs_type <= mrs_3:
+            patient.mrs_type = 3
+        elif patient.mrs_type <= mrs_4:
+            patient.mrs_type = 4
+        else: patient.mrs_type = 5
+
+
+
 
         # Record the time the patient started queuing for a nurse
         start_q_nurse = self.env.now
