@@ -54,7 +54,7 @@ class g:
 
     # MRS % range - this is used to assign a MRS to a patient rather than using
     # a expon distribution as the MRS. There are different ranges for each
-    # diagnosis
+    # stroke diagnosis
 
     mrs_i_0 = 9
     mrs_i_1 = 27
@@ -62,7 +62,11 @@ class g:
     mrs_i_3 = 62
     mrs_i_4 = 90
 
-
+    mrs_ich_0 = 3
+    mrs_ich_1 = 17
+    mrs_ich_2 = 28
+    mrs_ich_3 = 47
+    mrs_ich_4 = 82
 
     # Admission Range (% Chance of Admission) for TIA and Stroke Mimic, non 
     # stroke shares the range with stroke mimic in this model. (This is 
@@ -349,21 +353,40 @@ class Model:
         if self.env.now > g.warm_up_period:
             self.results_df.at[patient.id, "Diangosis Value"] = (
                 patient.diagnosis)
-            
-        if self.mrs_type <= self.mrs_i_0:
-            patient.mrs_type = 0
-        elif patient.mrs_type <= mrs_1:
-            patient.mrs_type = 1
-        elif patient.mrs_type <= mrs_2:
-            patient.mrs_type = 2
-        elif patient.mrs_type <= mrs_3:
-            patient.mrs_type = 3
-        elif patient.mrs_type <= mrs_4:
-            patient.mrs_type = 4
-        else: patient.mrs_type = 5
 
 
+        # This block of code assigns the patient a MRS based on the range set 
+        # in the patient class. This currently differs from the above which 
+        # uses an element of randomness to assign a diangois, this code looks
+        # only at the G class.
 
+        if patient.patient_diagnosis == 1:
+
+            if patient.mrs_type <= g.mrs_i_0:
+                patient.mrs_type = 0
+            elif patient.mrs_type <= g.mrs_i_1:
+                patient.mrs_type = 1
+            elif patient.mrs_type <= g.mrs_i_2:
+                patient.mrs_type = 2
+            elif patient.mrs_type <= g.mrs_i_3:
+                patient.mrs_type = 3
+            elif patient.mrs_type <= g.mrs_i_4:
+                patient.mrs_type = 4
+            else: patient.mrs_type = 5
+
+        elif patient.patient_diagnosis == 0:
+
+            if patient.mrs_type <= g.mrs_ich_0:
+                patient.mrs_type = 0
+            elif patient.mrs_type <= g.mrs_ich_1:
+                patient.mrs_type = 1
+            elif patient.mrs_type <= g.mrs_ich_2:
+                patient.mrs_type = 2
+            elif patient.mrs_type <= g.mrs_ich_3:
+                patient.mrs_type = 3
+            elif patient.mrs_type <= g.mrs_ich_4:
+                patient.mrs_type = 4
+            else: patient.mrs_type = 5
 
         # Record the time the patient started queuing for a nurse
         start_q_nurse = self.env.now
