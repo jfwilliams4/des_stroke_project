@@ -750,7 +750,7 @@ class Model:
 
                 if patient.patient_diagnosis == 0 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time_mrs_0)
+                        (6.0 / g.mean_n_ich_ward_time_mrs_0)
                     patient.mrs_discharge = patient.mrs_type
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
@@ -773,7 +773,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 3:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time_mrs_3)
+                        (4.0 / g.mean_n_ich_ward_time_mrs_3)
                     patient.mrs_discharge = patient.mrs_type -\
                               random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
@@ -781,7 +781,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 4:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time_mrs_4)
+                        (0.5 / g.mean_n_ich_ward_time_mrs_4)
                     patient.mrs_discharge = patient.mrs_type -\
                               random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
@@ -789,7 +789,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 5:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time_mrs_5)
+                        (0.5 / g.mean_n_ich_ward_time_mrs_5)
                     patient.mrs_discharge = patient.mrs_type -\
                               random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
@@ -802,14 +802,14 @@ class Model:
                 
                 if patient.patient_diagnosis == 1 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_i_ward_time_mrs_0)
+                        (3.0/ g.mean_n_i_ward_time_mrs_0)
                     patient.mrs_discharge = patient.mrs_type
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 1:
                     sampled_ward_act_time = random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_1)
+                    (2.0 / g.mean_n_i_ward_time_mrs_1)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -832,7 +832,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 2:
                     sampled_ward_act_time = random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_2)
+                    (5.0 / g.mean_n_i_ward_time_mrs_2)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -855,7 +855,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 3:
                     sampled_ward_act_time = random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_3)
+                    (70.0 / g.mean_n_i_ward_time_mrs_3)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -878,7 +878,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 4:
                     sampled_ward_act_time = random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_4)
+                    (2.0 / g.mean_n_i_ward_time_mrs_4)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -901,7 +901,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 5:
                     sampled_ward_act_time = random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_5)
+                    (2.0 / g.mean_n_i_ward_time_mrs_5)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -926,13 +926,13 @@ class Model:
 
                 if patient.patient_diagnosis == 2:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_tia_ward_time)
+                        (3.0 / g.mean_n_tia_ward_time)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
                 
                 if patient.patient_diagnosis > 2:
                     sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_non_stroke_ward_time)
+                        (3.0 / g.mean_n_non_stroke_ward_time)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
             
