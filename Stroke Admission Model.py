@@ -24,19 +24,19 @@ class g:
     number_of_ward_beds = 1
     
     # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
-    mean_n_i_ward_time_mrs_0 = 1440 * 3
-    mean_n_i_ward_time_mrs_1 = 1440 * 4 
+    mean_n_i_ward_time_mrs_0 = 1440 * 2
+    mean_n_i_ward_time_mrs_1 = 1440 * 4
     mean_n_i_ward_time_mrs_2 = 1440 * 7 
     mean_n_i_ward_time_mrs_3 = 1440 * 14
     mean_n_i_ward_time_mrs_4 = 1440 * 25
-    mean_n_i_ward_time_mrs_5 = 1440 * 31 
+    mean_n_i_ward_time_mrs_5 = 1440 * 21
 
     mean_n_ich_ward_time_mrs_0 = 1440 * 3 
-    mean_n_ich_ward_time_mrs_1 = 1440 * 7
-    mean_n_ich_ward_time_mrs_2 = 1440 * 11
-    mean_n_ich_ward_time_mrs_3 = 1440 * 19
-    mean_n_ich_ward_time_mrs_4 = 1440 * 34
-    mean_n_ich_ward_time_mrs_5 = 1440 * 43
+    mean_n_ich_ward_time_mrs_1 = 1440 * 5
+    mean_n_ich_ward_time_mrs_2 = 1440 * 9
+    mean_n_ich_ward_time_mrs_3 = 1440 * 23
+    mean_n_ich_ward_time_mrs_4 = 1440 * 38
+    mean_n_ich_ward_time_mrs_5 = 1440 * 41
 
     mean_n_non_stroke_ward_time = 1440 * 5
     mean_n_tia_ward_time = 1440 * 2
@@ -56,18 +56,18 @@ class g:
     # a expon distribution as the MRS. There are different ranges for each
     # stroke diagnosis
 
-    mrs_i_0 = 9
-    mrs_i_1 = 27
-    mrs_i_2 = 44
-    mrs_i_3 = 62
-    mrs_i_4 = 90
+    mrs_i_0 = 28
+    mrs_i_1 = 39
+    mrs_i_2 = 52
+    mrs_i_3 = 67
+    mrs_i_4 = 87
 
-    mrs_ich_0 = 3
-    mrs_ich_1 = 17
-    mrs_ich_2 = 28
-    mrs_ich_3 = 47
-    mrs_ich_4 = 82
-
+    mrs_ich_0 = 12
+    mrs_ich_1 = 22
+    mrs_ich_2 = 36
+    mrs_ich_3 = 52
+    mrs_ich_4 = 81
+    
     # Admission Range (% Chance of Admission) for TIA and Stroke Mimic, non 
     # stroke shares the range with stroke mimic in this model. (This is 
     # reflected in our real data mainly because most non strokes are often
@@ -387,6 +387,10 @@ class Model:
             elif patient.mrs_type <= g.mrs_ich_4:
                 patient.mrs_type = 4
             else: patient.mrs_type = 5
+
+        elif patient.patient_diagnosis > 1:
+
+            patient.mrs_type = 7
 
         # Record the time the patient started queuing for a nurse
         start_q_nurse = self.env.now
