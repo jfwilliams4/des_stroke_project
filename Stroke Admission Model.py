@@ -166,8 +166,6 @@ class Model:
         self.results_df["Admission Avoidance"] = [""]
         self.results_df["SDEC Savings"] = [0.0]
         self.results_df["MRS Type"] = [0.0]
-        self.results_df["MRS DC"] = [0.0]
-        self.results_df["MRS Change"] = [0.0]
         self.results_df["Onset Type"] = [0.0]
         self.results_df["Diagnosis Type"] = [""]
         self.results_df["Diangosis Value"] = [""]
@@ -745,65 +743,53 @@ class Model:
                 patient.q_time_ward = end_q_ward - start_q_ward
 
                 # The below code checks the patients diagnosis and MRS,
-                # adjusting MRS change and LOS baised on these. This code is 
+                # adjusting LOS baised on these. This code is 
                 # for ICH patients. 
 
                 if patient.patient_diagnosis == 0 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
                         (6.0 / g.mean_n_ich_ward_time_mrs_0)
-                    patient.mrs_discharge = patient.mrs_type
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 1:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_ich_ward_time_mrs_1)
-                    patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 2:
                     sampled_ward_act_time = random.expovariate\
                         (1.0 / g.mean_n_ich_ward_time_mrs_2)
-                    patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 3:
                     sampled_ward_act_time = random.expovariate\
                         (4.0 / g.mean_n_ich_ward_time_mrs_3)
-                    patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 4:
                     sampled_ward_act_time = random.expovariate\
                         (0.5 / g.mean_n_ich_ward_time_mrs_4)
-                    patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 5:
                     sampled_ward_act_time = random.expovariate\
                         (0.5 / g.mean_n_ich_ward_time_mrs_5)
-                    patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
                 
                 # The below code checks the patients diagnosis and MRS,
-                # adjusting MRS change and LOS baised on these. This code is 
+                # adjusting LOS baised on these. This code is 
                 # for I patients amd also checks for thrombolysis and adjusts 
                 # LOS and associated savings accordingly. 
                 
                 if patient.patient_diagnosis == 1 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
                         (3.0/ g.mean_n_i_ward_time_mrs_0)
-                    patient.mrs_discharge = patient.mrs_type
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
@@ -813,8 +799,6 @@ class Model:
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,1)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
                         if self.env.now > g.warm_up_period and\
@@ -825,19 +809,15 @@ class Model:
                             g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
-                        patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 2:
                     sampled_ward_act_time = random.expovariate\
-                    (5.0 / g.mean_n_i_ward_time_mrs_2)
+                    (1.0 / g.mean_n_i_ward_time_mrs_2)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,2)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
                         if self.env.now > g.warm_up_period and\
@@ -848,19 +828,15 @@ class Model:
                             g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
-                        patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 3:
-                    sampled_ward_act_time = random.expovariate\
-                    (70.0 / g.mean_n_i_ward_time_mrs_3)
+                    sampled_ward_act_time = min(random.expovariate\
+                    (2.0 / g.mean_n_i_ward_time_mrs_3), 1440 * 70)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,2)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
                         if self.env.now > g.warm_up_period and\
@@ -871,8 +847,6 @@ class Model:
                             g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
-                        patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
@@ -882,8 +856,6 @@ class Model:
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,2)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
                         if self.env.now > g.warm_up_period and\
@@ -894,8 +866,6 @@ class Model:
                             g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
-                        patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
@@ -905,8 +875,6 @@ class Model:
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
-                        patient.mrs_discharge = patient.mrs_type - \
-                            random.randint(0,2)
                         yield self.env.timeout(\
                             sampled_ward_act_time_thrombolysis)
                         if self.env.now > g.warm_up_period and\
@@ -917,8 +885,6 @@ class Model:
                             g.inpatient_bed_cost_thrombolysis
                         self.ward_occupancy.remove(patient)
                     else:
-                        patient.mrs_discharge = patient.mrs_type -\
-                              random.randint(0,1)
                         yield self.env.timeout(sampled_ward_act_time)
                         self.ward_occupancy.remove(patient)
 
@@ -943,11 +909,6 @@ class Model:
                     patient.q_time_ward)
                     self.results_df.at[patient.id, "Ward LOS"] = (
                     sampled_ward_act_time)
-                    self.results_df.at[patient.id, "MRS DC"] = (
-                    patient.mrs_discharge)
-                    self.results_df.at[patient.id, "MRS Change"] = (
-                    patient.mrs_type - patient.mrs_discharge)
-
 
     # This method calculates results over a single run.
     
@@ -996,8 +957,6 @@ class Model:
         self.thrombolysis_savings = round(self.results_df\
                                           ["Thrombolysis Savings"].sum(),0)
         self.total_savings = self.thrombolysis_savings + self.savings_sdec
-
-        self.mean_mrs_change = round(self.results_df["MRS Change"].mean(), 2)
 
     # This method plots the stroke nurse assessment queue graph, as it is after
     # the run method it will appear after the run has completed in the output.
@@ -1111,7 +1070,6 @@ class Trial:
         self.df_trial_results["SDEC Savings (£)"] = [0.0]
         self.df_trial_results["Thrombolysis Savings (£)"] = [0.0]
         self.df_trial_results["Total Savings"] = [0.0]
-        self.df_trial_results["Mean MRS Change"] = [0.0]
         self.df_trial_results.set_index("Run Number", inplace=True)
 
     # Method to run a trial
@@ -1139,8 +1097,7 @@ class Trial:
                                                 my_model.medical_staff_cost,
                                                 my_model.savings_sdec,
                                                 my_model.thrombolysis_savings,
-                                                my_model.total_savings,
-                                                my_model.mean_mrs_change]
+                                                my_model.total_savings]
 
         if g.write_to_csv == True:
             self.df_trial_results.to_csv\
@@ -1167,8 +1124,7 @@ class Trial:
                 ("sdec_medical_cost","SDEC Medical Staff Cost (£)"),
             ("trial_sdec_financial_savings", "SDEC Savings (£)"),
             ("trial_thrombolysis_savings", "Thrombolysis Savings (£)"),
-            ("trial_total_savings", "Total Savings"),("trial_mrs_change",\
-                                                      "Mean MRS Change")]:
+            ("trial_total_savings", "Total Savings")]:
 
         # Checks to see if the attribute already exists and if it doesn't 
         # create it. Creates a mean of each trial and creates a dictionary 
@@ -1208,8 +1164,6 @@ class Trial:
               {g.trial_thrombolysis_savings[g.trials_run_counter]}")
         print(f"Trial Total Savings (£):            \
               {g.trial_total_savings[g.trials_run_counter]}")
-        print(f"Mean MRS Change:                    \
-              {g.trial_mrs_change[g.trials_run_counter]}")
         
 #This code asks the user if they want to generate cvs per run
 csv_input = False
@@ -1343,8 +1297,7 @@ combined_results = {
             g.trial_sdec_financial_savings.get(trial, None),
         "Thrombolysis Savings (£)":\
               g.trial_thrombolysis_savings.get(trial, None),
-        "Total Savings (£)": g.trial_total_savings.get(trial, None),\
-            "Mean MRS Change": g.trial_mrs_change.get(trial, None)}
+        "Total Savings (£)": g.trial_total_savings.get(trial, None)}
     for trial in trial_numbers
 }
 
