@@ -30,7 +30,7 @@ class g:
     mean_n_i_ward_time_mrs_3 = 1440 * 14
     mean_n_i_ward_time_mrs_4 = 1440 * 25
     mean_n_i_ward_time_mrs_5 = 1440 * 21
-    mean_n_i_ward_time_mrs_6 = 1440 * 10
+    mean_n_i_ward_time_mrs_6 = 1440 * 18
 
     mean_n_ich_ward_time_mrs_0 = 1440 * 3 
     mean_n_ich_ward_time_mrs_1 = 1440 * 5
@@ -38,7 +38,7 @@ class g:
     mean_n_ich_ward_time_mrs_3 = 1440 * 23
     mean_n_ich_ward_time_mrs_4 = 1440 * 38
     mean_n_ich_ward_time_mrs_5 = 1440 * 41
-    mean_n_ich_ward_time_mrs_6 = 1440 * 45
+    mean_n_ich_ward_time_mrs_6 = 1440 * 5
 
     mean_n_non_stroke_ward_time = 1440 * 5
     mean_n_tia_ward_time = 1440 * 2
@@ -763,7 +763,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 1:
                     sampled_ward_act_time = random.expovariate\
-                        (3.0 / g.mean_n_ich_ward_time_mrs_1)
+                        (1.0 / g.mean_n_ich_ward_time_mrs_1)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
@@ -775,21 +775,27 @@ class Model:
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 3:
                     sampled_ward_act_time = random.expovariate\
-                        (4.0 / g.mean_n_ich_ward_time_mrs_3)
+                        (1.0 / g.mean_n_ich_ward_time_mrs_3)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 4:
                     sampled_ward_act_time = min(random.expovariate\
-                        (0.75 / g.mean_n_ich_ward_time_mrs_4), 1440 * 120)
+                        (1.0 / g.mean_n_ich_ward_time_mrs_4), 1440 * 120)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 5:
                     sampled_ward_act_time = min(random.expovariate\
-                        (0.75 / g.mean_n_ich_ward_time_mrs_5), 1440 * 130)
+                        (1.0 / g.mean_n_ich_ward_time_mrs_5), 1440 * 130)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 0 and patient.mrs_type == 6:
+                    sampled_ward_act_time = random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_6)
+                    yield self.env.timeout(sampled_ward_act_time)
+                    self.ward_occupancy.remove(patient)                    
                 
                 # The below code checks the patients diagnosis and MRS,
                 # adjusting LOS baised on these. This code is 
@@ -798,13 +804,13 @@ class Model:
                 
                 if patient.patient_diagnosis == 1 and patient.mrs_type == 0:
                     sampled_ward_act_time = random.expovariate\
-                        (3.0/ g.mean_n_i_ward_time_mrs_0)
+                        (1.0/ g.mean_n_i_ward_time_mrs_0)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 1:
                     sampled_ward_act_time = random.expovariate\
-                    (2.0 / g.mean_n_i_ward_time_mrs_1)
+                    (1.0 / g.mean_n_i_ward_time_mrs_1)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -842,7 +848,7 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 3:
                     sampled_ward_act_time = min(random.expovariate\
-                    (1.0 / g.mean_n_i_ward_time_mrs_3), 1440 * 70)
+                    (3.0 / g.mean_n_i_ward_time_mrs_3), 1440 * 70)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -880,7 +886,26 @@ class Model:
 
                 elif patient.patient_diagnosis == 1 and patient.mrs_type == 5:
                     sampled_ward_act_time = random.expovariate\
-                    (1.5 / g.mean_n_i_ward_time_mrs_5)
+                    (2.0 / g.mean_n_i_ward_time_mrs_5)
+                    if patient.thrombolysis == True:
+                        sampled_ward_act_time_thrombolysis = \
+                                sampled_ward_act_time * g.thrombolysis_los_save
+                        yield self.env.timeout(\
+                            sampled_ward_act_time_thrombolysis)
+                        if self.env.now > g.warm_up_period and\
+                              patient.advanced_ct_pathway == True:
+                            self.results_df.at[patient.id,\
+                         "Thrombolysis Savings"] = (((sampled_ward_act_time\
+                         - sampled_ward_act_time_thrombolysis)/60)/24)*\
+                            g.inpatient_bed_cost_thrombolysis
+                        self.ward_occupancy.remove(patient)
+                    else:
+                        yield self.env.timeout(sampled_ward_act_time)
+                        self.ward_occupancy.remove(patient)
+
+                elif patient.patient_diagnosis == 1 and patient.mrs_type == 6:
+                    sampled_ward_act_time = random.expovariate\
+                    (1.0 / g.mean_n_i_ward_time_mrs_6)
                     if patient.thrombolysis == True:
                         sampled_ward_act_time_thrombolysis = \
                                 sampled_ward_act_time * g.thrombolysis_los_save
@@ -1052,7 +1077,7 @@ class Model:
 
         if g.write_to_csv == True:
             self.results_df.to_csv\
-                (f"trial {g.trials_run_counter+1} output {self.run_number}.csv", 
+                (f"trial {g.trials_run_counter} output {self.run_number}.csv", 
                                index=False)
 
         self.plot_stroke_run_graphs()
@@ -1205,7 +1230,7 @@ while graph_input == False:
         print ("Invalid Input Please Try Again")
 
 
-for x in range(1):
+for x in range(3):
 
     # Code to ask the user how many beds are active on the unit.
 
