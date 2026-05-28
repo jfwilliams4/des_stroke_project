@@ -13,8 +13,8 @@ class g:
     sim_duration = 525600
     number_of_runs = 10
     warm_up_period = sim_duration / 5
-    patient_inter_day = 5
-    patient_inter_night = 5
+    patient_inter_day = 189
+    patient_inter_night = 247
     number_of_nurses = 2
     mean_n_consult_time = 60
     mean_n_ct_time = 20
@@ -245,7 +245,7 @@ class Model:
                 # patient's journey through the system)
                 self.env.process(self.stroke_assessment(p))
 
-                sampled_inter = random.expovariate(0.025 / g.patient_inter_day)
+                sampled_inter = random.expovariate(1.0 / g.patient_inter_day)
 
                 # Freeze this instance of this function in place until the
                 # inter-arrival time has elapsed.
@@ -278,7 +278,7 @@ class Model:
                 # patient's journey through the system)
                 self.env.process(self.stroke_assessment(p))
 
-                sampled_inter = random.expovariate(0.0075 / 
+                sampled_inter = random.expovariate(0.25 / 
                                                    g.patient_inter_night)
 
                 # Freeze this instance of this function in place until the
@@ -774,8 +774,8 @@ class Model:
                     self.ward_occupancy.remove(patient)
 
                 elif patient.patient_diagnosis == 0 and patient.mrs_type == 3:
-                    sampled_ward_act_time = random.expovariate\
-                        (1.0 / g.mean_n_ich_ward_time_mrs_3)
+                    sampled_ward_act_time = min(random.expovariate\
+                        (1.0 / g.mean_n_ich_ward_time_mrs_3), 1440 * 81)
                     yield self.env.timeout(sampled_ward_act_time)
                     self.ward_occupancy.remove(patient)
 
