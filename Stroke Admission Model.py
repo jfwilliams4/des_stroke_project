@@ -705,7 +705,6 @@ class Model:
             if patient.sdec_yield_count >= sampled_ward_act_time:
                 patient.sdec_admission_time_out = True
 
-
             if self.env.now > g.warm_up_period:
                 self.results_df.at[patient.id, "SDEC Yield Count"] = (
                     patient.sdec_yield_count)
@@ -722,6 +721,9 @@ class Model:
             if self.env.now > g.warm_up_period:
                 self.results_df.at[patient.id, "Time in SDEC"] =\
                       (sampled_sdec_stay_time)
+
+        sampled_ward_act_time = sampled_ward_act_time - \
+                patient.sdec_yield_count
 
         # The below code records the patients diagnosis attribute, this is added
         # to the DF to check the diagnosis code is working correctly.
