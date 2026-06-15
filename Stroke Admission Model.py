@@ -6,10 +6,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
-# Global class to store parameters for the model.
+# Global class (g) stores the key variables for the model, these are used 
+# throughout the model and can be changed by the user to test different
+# scenarios.
+
+# By default values in this class are set to reflect real world data collected
+# from Maidstone Hospital's Stroke Service between 2023 and 2026.
 
 class g:
-    #525600 (Year of Minutes)
+    # The simulation runs under the assumptions that each simpy time unit value
+    # is equal to a minute. 
+
     sim_duration = 525600
     number_of_runs = 10
     warm_up_period = sim_duration / 5
@@ -23,7 +30,8 @@ class g:
     mean_n_sdec_time = 240
     number_of_ward_beds = 1
     
-    # Different variables for ward stay based on diagnosis, thrombolysis and MRS    
+    # Ward length of stay (LOS) is set by the patient diagnosis and MRS. 
+  
     mean_n_i_ward_time_mrs_0 = 1440 * 2
     mean_n_i_ward_time_mrs_1 = 1440 * 4
     mean_n_i_ward_time_mrs_2 = 1440 * 7 
@@ -42,21 +50,44 @@ class g:
 
     mean_n_non_stroke_ward_time = 1440 * 5
     mean_n_tia_ward_time = 1440 * 2
+    
+    # This model works on the assumption, supported by third party research that
+    # thrombolysis reduces the length of stay in hospital, this value is
+    # set to a 75% reduction by default. 
+    
     thrombolysis_los_save = 0.75
     
+    # Operation of the stroke sdec is associated with a cost, in this case the 
+    # wage of the doctor covering the service. This value is set at 50p per 
+    # minute by default to reflect the cost of the doctor's time.
+
     sdec_dr_cost_min = 0.50
+
+    # When a patient avoids an admission via the SDEC pathway there is a cost
+    # saving associated with this. These values are set below based on NHS 
+    # tariff values from the 2014 "Stroke acute commissioningand 
+    # tariff guidance" and then inflation adjusted to 2025 values 
+    # using the Bank of England inflation calculator. 
+
     inpatient_bed_cost = 876
     inpatient_bed_cost_thrombolysis = 528.17
 
-    # Diagnosis % range
+    # To detemine the patients diagnosis the model assigns each patient a value
+    # between 0 and 100. This is done within the "Patient" class. This value is
+    # then compared to the values below to determine the patients diagnosis. 
+    # For example, <=10 is ICH, >10 and <=60 is I. By default this values are 
+    # alligned to real world data collect from MGH between 2023 and 2026.
+    
     ich = 10
     i = 60
     tia = 70
     stroke_mimic = 80
 
-    # MRS % range - this is used to assign a MRS to a patient rather than using
-    # a expon distribution as the MRS. There are different ranges for each
-    # stroke diagnosis
+    # The values below controls the MRS assigned to patient based on their
+    # diagnosis. This works in a similar way to the diagnosis values above, 
+    # with a patient being assigned a value between 0 and 100 to determine 
+    # their MRS. This data is based on real world data collected from 
+    # MGH between 2023 and 2026. 
 
     mrs_i_0 = 28
     mrs_i_1 = 39
@@ -77,18 +108,21 @@ class g:
     # reflected in our real data mainly because most non strokes are often
     # mimics that are not classified under the stroke mimic criteria in our
     # data collection)
+
     tia_admission = 10
     stroke_mimic_admission = 30
     
-    # Operational hours of SDEC and CTP are set by the user and stored in the 
-    # variables below.
+    # This model uses two generators to represent the operation of the stroke 
+    # SDEC and CTP scanner. These values are set by the user each time the 
+    # model is run.
 
     sdec_unav_time = 0
     sdec_unav_freq = 0 
     ctp_unav_time = 0 
     ctp_unav_freq = 0 
 
-    # These values are changed by the model itself
+    # These values are set by the model / user to control the models operation.
+    # They should not be adjusted here, but rather as an input.
 
     sdec_unav = False
     ctp_unav = False
@@ -99,23 +133,23 @@ class g:
     patient_arrival_gen_1 = False
     patient_arrival_gen_2 = False
 
-# Patient class to store patient attributes
+# Patient class to store patient attributes that are used throughout the model.
 
 class Patient:
     def __init__(self, p_id):
         self.id = p_id
         self.q_time_nurse = 0
         self.q_time_ward = 0
+
         #0 = known onset, 1 = unknown onset (in ctp range), 2 = unknown (out of
         # ctp range)
+
         self.onset_type = random.randint(0, 2)
-        #Max MRS is set to 5
-        self.mrs_type = random.randint(0, 100)
-        self.mrs_discharge = 0
-        #<=5 is ICH, <=55 is I, <= 70 is TIA, <=85 is Stroke Mimic, >85 is non\
-        # stroke, this set in g class
+
+        # MRS values goes 0 to 6 with 7 being used for Non Stroke patients.
+        
+        self.mrs_type = random.randint(0, 100)        
         self.diagnosis = random.randint(0, 100)
-        #0 = ICH, 1 = I, 2 = TIA, 3 = Stroke Mimic, 4 = non stroke
         self.patient_diagnosis = 0
         self.priority = 1
         self.non_admission = random.randint(0, 100)
@@ -128,6 +162,7 @@ class Patient:
         self.sdec_admission_time_out = False
 
 # Class representing the model of the stroke assessment / treatment process
+
 class Model:
     # Constructor to set up the model for a run. We pass in a run number when
     # we create a new model.
@@ -1067,7 +1102,7 @@ class Trial:
                 (f"trial {g.trials_run_counter} trial results.csv", 
                                index=False)
 
-        # This is new code that will store all averages to compare across 
+        # This code that will store all averages to compare across 
         # the different trials. It does this by checking if the attribute
         # exists in the global g class, and if it doesn't it creates it. It 
         # then stores the mean of each run against the attribute 
@@ -1099,6 +1134,7 @@ class Trial:
                 round(self.df_trial_results[col].mean(), 2)
 
         # Code to store the configuration that was used for this trial.
+        
         self.trial_info = (
             f"Trial {g.trials_run_counter}, SDEC Therapy = {g.therapy_sdec},"\
                  f" SDEC Open % = {sdec_value}, CTP Open % = {ctp_value}")
@@ -1128,7 +1164,8 @@ class Trial:
         print(f"Trial Total Savings (£):            \
               {g.trial_total_savings[g.trials_run_counter]}")
         
-#This code asks the user if they want to generate cvs per run
+# This code asks the user if they want to generate cvs per run
+
 csv_input = False
 
 while csv_input == False:
@@ -1240,9 +1277,8 @@ for x in range(3):
 print ("All Trials Completed")
 
 
-# Combine all trial results into a single dictionary, I am 
-# currently unaware were the trial_sdec_finacial_savings is stored in class g
-# but it works so I'll leave it for now...
+# Combine all trial results into a single dictionary.
+
 trial_numbers = g.trial_sdec_financial_savings.keys()
 combined_results = {
     trial: {
