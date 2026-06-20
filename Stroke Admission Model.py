@@ -32,30 +32,30 @@ class g:
     
     # Ward length of stay (LOS) is set by the patient diagnosis and MRS. 
   
-    mean_n_i_ward_time_mrs_0 = 1440 * 2
+    mean_n_i_ward_time_mrs_0 = 1440 * 4
     mean_n_i_ward_time_mrs_1 = 1440 * 4
     mean_n_i_ward_time_mrs_2 = 1440 * 7 
     mean_n_i_ward_time_mrs_3 = 1440 * 14
-    mean_n_i_ward_time_mrs_4 = 1440 * 25
+    mean_n_i_ward_time_mrs_4 = 1440 * 28
     mean_n_i_ward_time_mrs_5 = 1440 * 21
-    mean_n_i_ward_time_mrs_6 = 1440 * 18
+    mean_n_i_ward_time_mrs_6 = 1440 * 15
 
-    mean_n_ich_ward_time_mrs_0 = 1440 * 3 
-    mean_n_ich_ward_time_mrs_1 = 1440 * 5
+    mean_n_ich_ward_time_mrs_0 = 1440 * 5 
+    mean_n_ich_ward_time_mrs_1 = 1440 * 6
     mean_n_ich_ward_time_mrs_2 = 1440 * 9
-    mean_n_ich_ward_time_mrs_3 = 1440 * 23
-    mean_n_ich_ward_time_mrs_4 = 1440 * 38
-    mean_n_ich_ward_time_mrs_5 = 1440 * 41
-    mean_n_ich_ward_time_mrs_6 = 1440 * 5
+    mean_n_ich_ward_time_mrs_3 = 1440 * 16
+    mean_n_ich_ward_time_mrs_4 = 1440 * 39
+    mean_n_ich_ward_time_mrs_5 = 1440 * 42
+    mean_n_ich_ward_time_mrs_6 = 1440 * 10
 
-    mean_n_non_stroke_ward_time = 1440 * 5
-    mean_n_tia_ward_time = 1440 * 2
+    mean_n_non_stroke_ward_time = 1440 * 4
+    mean_n_tia_ward_time = 1440 * 1.4
     
     # This model works on the assumption, supported by third party research that
     # thrombolysis reduces the length of stay in hospital, this value is
-    # set to a 75% reduction by default. 
+    # set to a 80% reduction by default. 
     
-    thrombolysis_los_save = 0.75
+    thrombolysis_los_save = 0.8
     
     # Operation of the stroke sdec is associated with a cost, in this case the 
     # wage of the doctor covering the service. This value is set at 50p per 
